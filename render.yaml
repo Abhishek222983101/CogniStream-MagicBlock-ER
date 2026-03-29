@@ -2,6 +2,7 @@ services:
   - type: web
     name: cognistream-backend
     env: python
+    plan: free # Force the free tier
     buildCommand: |
       pip install -r requirements.txt
       pip install https://s3-us-west-2.amazonaws.com/ai2-s2-scispacy/releases/v0.5.3/en_core_sci_md-0.5.3.tar.gz
@@ -12,6 +13,6 @@ services:
       - key: TRIALMATCH_SKIP_LLM
         value: "1"
       - key: MISTRAL_API_KEY
-        sync: false # You will input this manually in the Render dashboard
+        sync: false
       - key: GROQ_API_KEY
         sync: false
