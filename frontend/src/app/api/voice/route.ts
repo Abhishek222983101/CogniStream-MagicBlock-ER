@@ -3,6 +3,7 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 import { ragEngine } from "@/lib/ragEngine";
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+const GROQ_API_KEY = process.env.GROQ_API_KEY;
 const ELEVENLABS_API_KEY = process.env.ELEVENLABS_API_KEY;
 
 interface VoiceRequest {
@@ -20,11 +21,56 @@ async function ensureRAGInit() {
   }
 }
 
+// Call Groq API as fallback when Gemini fails
+async function callGroq(prompt: string): Promise<string> {
+  if (!GROQ_API_KEY) throw new Error("GROQ_API_KEY not configured");
+  
+  const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${GROQ_API_KEY}`,
+    },
+    body: JSON.stringify({
+      model: "llama-3.1-8b-instant",
+      messages: [{ role: "user", content: prompt }],
+      temperature: 0.7,
+      max_tokens: 500,
+    }),
+  });
+
+  if (!response.ok) {
+    const error = await response.text();
+    throw new Error(`Groq API error: ${error}`);
+  }
+
+  const data = await response.json();
+  return data.choices[0]?.message?.content || "";
+}
+
+// Call Gemini API
+async function callGemini(prompt: string): Promise<string> {
+  if (!GEMINI_API_KEY) throw new Error("GEMINI_API_KEY not configured");
+  
+  const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
+  const model = genAI.getGenerativeModel({ 
+    model: "gemini-2.0-flash",
+    generationConfig: {
+      temperature: 0.7,
+      maxOutputTokens: 500,
+    }
+  });
+
+  const result = await model.generateContent(prompt);
+  return result.response.text();
+}
+
 export async function POST(req: NextRequest) {
   try {
-    if (!GEMINI_API_KEY) {
+    if (!GEMINI_API_KEY && !GROQ_API_KEY) {
+      console.error("Voice API: No AI API key configured (need GEMINI_API_KEY or GROQ_API_KEY)");
       return NextResponse.json(
-        { error: "GEMINI_API_KEY not configured" },
+        { error: "No AI API key configured" },
         { status: 500 }
       );
     }
@@ -39,21 +85,15 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    console.log("Voice API: Processing message:", message);
+
     await ensureRAGInit();
 
     // Get context from RAG engine
     const context = ragEngine.getContextForQuery(message);
     const retrieved = ragEngine.retrieve(message, 3);
 
-    // Initialize Gemini
-    const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
-    const model = genAI.getGenerativeModel({ 
-      model: "gemini-2.0-flash",
-      generationConfig: {
-        temperature: 0.7,
-        maxOutputTokens: 500, // Shorter for voice
-      }
-    });
+    console.log("Voice API: RAG retrieved", retrieved.length, "chunks");
 
     // Special prompt for voice assistant - shorter, more conversational
     const systemPrompt = `You are TrialMatch AI, a friendly voice assistant helping people find clinical trials in India.
@@ -72,8 +112,23 @@ User said: "${message}"
 
 Respond conversationally and concisely:`;
 
-    const result = await model.generateContent(systemPrompt);
-    const response = result.response.text();
+    // Try Gemini first, fallback to Groq
+    let response: string;
+    let usedModel: string;
+    
+    try {
+      console.log("Voice API: Trying Gemini...");
+      response = await callGemini(systemPrompt);
+      usedModel = "gemini-2.0-flash";
+      console.log("Voice API: Gemini success");
+    } catch (geminiError: any) {
+      console.log("Voice API: Gemini failed, trying Groq...", geminiError?.message);
+      response = await callGroq(systemPrompt);
+      usedModel = "llama-3.1-8b-instant";
+      console.log("Voice API: Groq success");
+    }
+
+    console.log("Voice API: Response received, length:", response.length);
 
     // Generate audio if requested and ElevenLabs key is available
     let audioBase64: string | null = null;
@@ -124,10 +179,11 @@ Respond conversationally and concisely:`;
       hasAudio: !!audioBase64,
     });
 
-  } catch (error) {
-    console.error("Voice API error:", error);
+  } catch (error: any) {
+    console.error("Voice API error:", error?.message || error);
+    console.error("Voice API error stack:", error?.stack);
     return NextResponse.json(
-      { error: "Failed to process voice request" },
+      { error: `Failed to process voice request: ${error?.message || 'Unknown error'}` },
       { status: 500 }
     );
   }
@@ -138,6 +194,7 @@ export async function GET() {
     status: "ready",
     elevenlabs: !!ELEVENLABS_API_KEY,
     gemini: !!GEMINI_API_KEY,
+    groq: !!GROQ_API_KEY,
     features: ["speech-to-text", "text-to-speech", "clinical-rag"],
   });
 }
