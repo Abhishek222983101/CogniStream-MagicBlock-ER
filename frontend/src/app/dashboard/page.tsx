@@ -31,6 +31,7 @@ import {
   Cpu,
   Loader2,
   TrendingUp,
+  Mic,
 } from "lucide-react";
 import {
   fetchHealth,
@@ -253,6 +254,14 @@ export default function CoordinatorDashboard() {
                 <button className="sidebar-item w-full flex items-center gap-3 px-3 py-2.5 rounded-sm transition-all text-sm font-mono text-charcoal/70 hover:text-charcoal hover:bg-paper/50 border-2 border-transparent">
                   <MessageSquare className="w-4 h-4 shrink-0" strokeWidth={2} />
                   <span className={!sidebarOpen ? "lg:hidden" : ""}>AI Chat</span>
+                </button>
+              </Link>
+
+              <Link href="/voice">
+                <button className="sidebar-item w-full flex items-center gap-3 px-3 py-2.5 rounded-sm transition-all text-sm font-mono bg-gradient-to-r from-cobalt/10 to-surgical/10 text-charcoal hover:from-cobalt/20 hover:to-surgical/20 border-2 border-cobalt/20">
+                  <Mic className="w-4 h-4 shrink-0 text-cobalt" strokeWidth={2} />
+                  <span className={!sidebarOpen ? "lg:hidden" : ""}>Voice AI</span>
+                  <span className="ml-auto text-[8px] font-bold bg-surgical text-white px-1.5 py-0.5 rounded uppercase">New</span>
                 </button>
               </Link>
 

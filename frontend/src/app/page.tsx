@@ -1,4 +1,4 @@
-import { ArrowRight, Activity, Database, Server, Brain, Target, Shield, MapPin, CheckCircle2, XCircle, AlertCircle, Terminal } from "lucide-react";
+import { ArrowRight, Activity, Database, Server, Brain, Target, Shield, MapPin, CheckCircle2, XCircle, AlertCircle, Terminal, Mic } from "lucide-react";
 import Link from "next/link";
 import HeroText from "@/components/ui/hero-shutter-text";
 import { MetricsScoreCards } from "@/components/ui/metrics-score-cards";
@@ -156,14 +156,18 @@ export default function Home() {
             <h2 className="font-heading text-3xl md:text-4xl font-black mb-12 text-center uppercase tracking-tight text-charcoal">
               System Modules
             </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
               {[
                 { title: "Dashboard", desc: "Central hub for monitoring patient pipeline and active clinical trials.", link: "/dashboard", color: "bg-white", icon: <Database className="w-6 h-6 mb-4 text-cobalt" strokeWidth={2.5} /> },
                 { title: "Pipeline", desc: "End-to-end ingestion, anonymization, and matching engine for new records.", link: "/pipeline", color: "bg-white", icon: <Activity className="w-6 h-6 mb-4 text-surgical" strokeWidth={2.5} /> },
                 { title: "Results", desc: "Deep-dive view into criteria breakdowns, geo-mapping, and AI reasoning.", link: "/results", color: "bg-white", icon: <Target className="w-6 h-6 mb-4 text-iodine" strokeWidth={2.5} /> },
-                { title: "Trial Chat", desc: "RAG-powered conversational assistant to query the trial database naturally.", link: "/chat", color: "bg-white", icon: <Brain className="w-6 h-6 mb-4 text-charcoal" strokeWidth={2.5} /> }
+                { title: "Trial Chat", desc: "RAG-powered conversational assistant to query the trial database naturally.", link: "/chat", color: "bg-white", icon: <Brain className="w-6 h-6 mb-4 text-charcoal" strokeWidth={2.5} /> },
+                { title: "Voice AI", desc: "Speak naturally to find clinical trials. Perfect for accessibility & elderly users.", link: "/voice", color: "bg-gradient-to-br from-cobalt/10 to-surgical/10", icon: <Mic className="w-6 h-6 mb-4 text-cobalt" strokeWidth={2.5} />, isNew: true }
               ].map((mod, i) => (
-                <Link key={i} href={mod.link} className={`block border-brutal shadow-brutal p-6 transition-transform hover:-translate-y-1 hover:shadow-brutal-sm ${mod.color}`}>
+                <Link key={i} href={mod.link} className={`block border-brutal shadow-brutal p-6 transition-transform hover:-translate-y-1 hover:shadow-brutal-sm ${mod.color} relative`}>
+                  {(mod as any).isNew && (
+                    <span className="absolute top-3 right-3 text-[8px] font-bold bg-surgical text-white px-2 py-1 rounded uppercase">New</span>
+                  )}
                   {mod.icon}
                   <h3 className="font-heading text-xl font-bold uppercase mb-3 text-charcoal">{mod.title}</h3>
                   <p className="font-mono text-sm text-charcoal/70 mb-6 min-h-[60px]">{mod.desc}</p>
@@ -258,6 +262,7 @@ export default function Home() {
                 <Link href="/pipeline" className="hover:text-surgical transition-colors">Pipeline</Link>
                 <Link href="/results" className="hover:text-iodine transition-colors">Results</Link>
                 <Link href="/chat" className="hover:text-white transition-colors">AI Chat</Link>
+                <Link href="/voice" className="hover:text-surgical transition-colors flex items-center gap-1">Voice AI <span className="text-[8px] bg-surgical text-white px-1 rounded">NEW</span></Link>
               </div>
             </div>
             
