@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: cognistream-backend
+    env: python
+    buildCommand: |
+      pip install -r requirements.txt
+      pip install https://s3-us-west-2.amazonaws.com/ai2-s2-scispacy/releases/v0.5.3/en_core_sci_md-0.5.3.tar.gz
+    startCommand: uvicorn backend.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
+      - key: TRIALMATCH_SKIP_LLM
+        value: "1"
+      - key: MISTRAL_API_KEY
+        sync: false # You will input this manually in the Render dashboard
+      - key: GROQ_API_KEY
+        sync: false

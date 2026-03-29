@@ -1,0 +1,2067 @@
+[
+  {
+    "patient_id": "ANON_TE_0001",
+    "demographics": {
+      "age": 56,
+      "gender": "Female",
+      "name": "Ritu Singh",
+      "city": "Hyderabad",
+      "state": "Telangana",
+      "lat": 17.385,
+      "lng": 78.4867
+    },
+    "diagnosis": {
+      "primary": "Hepatitis B",
+      "subtype": "Chronic",
+      "stage": null,
+      "icd10": "B16",
+      "biomarkers": null
+    },
+    "medical_history": [
+      "Hyperlipidemia",
+      "Hypothyroidism"
+    ],
+    "medications": [],
+    "prior_treatments": [],
+    "lab_values": {
+      "hemoglobin": 11.6,
+      "wbc": 9461,
+      "platelets": 161134,
+      "creatinine": 0.77,
+      "bilirubin": 1.92,
+      "alt": 69,
+      "ast": 20
+    },
+    "ecog_status": 0,
+    "smoking_status": "Former",
+    "allergies": [
+      "Penicillin"
+    ],
+    "clinical_notes": "Patient presents with Hepatitis B. ECOG 0."
+  },
+  {
+    "patient_id": "ANON_WE_0002",
+    "demographics": {
+      "age": 32,
+      "gender": "Male",
+      "name": "Prakash Nair",
+      "city": "Kolkata",
+      "state": "West Bengal",
+      "lat": 22.5726,
+      "lng": 88.3639
+    },
+    "diagnosis": {
+      "primary": "Hepatitis B",
+      "subtype": "Chronic",
+      "stage": null,
+      "icd10": "B16",
+      "biomarkers": null
+    },
+    "medical_history": [],
+    "medications": [],
+    "prior_treatments": [],
+    "lab_values": {
+      "hemoglobin": 11.9,
+      "wbc": 4398,
+      "platelets": 270335,
+      "creatinine": 1.2,
+      "bilirubin": 1.64,
+      "alt": 33,
+      "ast": 79
+    },
+    "ecog_status": 0,
+    "smoking_status": "Never",
+    "allergies": [
+      "Penicillin"
+    ],
+    "clinical_notes": "Patient presents with Hepatitis B. ECOG 0."
+  },
+  {
+    "patient_id": "ANON_KA_0003",
+    "demographics": {
+      "age": 54,
+      "gender": "Male",
+      "name": "Amit Sharma",
+      "city": "Bangalore",
+      "state": "Karnataka",
+      "lat": 12.9716,
+      "lng": 77.5946
+    },
+    "diagnosis": {
+      "primary": "Pulmonary Tuberculosis",
+      "subtype": "Drug-Sensitive",
+      "stage": null,
+      "icd10": "A15",
+      "biomarkers": null
+    },
+    "medical_history": [],
+    "medications": [],
+    "prior_treatments": [],
+    "lab_values": {
+      "hemoglobin": 12.7,
+      "wbc": 7017,
+      "platelets": 381124,
+      "creatinine": 1.34,
+      "bilirubin": 1.97,
+      "alt": 84,
+      "ast": 44
+    },
+    "ecog_status": 0,
+    "smoking_status": "Never",
+    "allergies": [
+      "NSAIDs"
+    ],
+    "clinical_notes": "Patient presents with Pulmonary Tuberculosis. ECOG 0."
+  },
+  {
+    "patient_id": "ANON_DE_0004",
+    "demographics": {
+      "age": 77,
+      "gender": "Male",
+      "name": "Nitin Mehta",
+      "city": "Delhi",
+      "state": "Delhi",
+      "lat": 28.6139,
+      "lng": 77.209
+    },
+    "diagnosis": {
+      "primary": "Ischemic Heart Disease",
+      "subtype": "Stable Angina",
+      "stage": null,
+      "icd10": "I25",
+      "biomarkers": null
+    },
+    "medical_history": [
+      "Type 2 Diabetes Mellitus",
+      "Hypothyroidism"
+    ],
+    "medications": [
+      "Metformin 500mg BD"
+    ],
+    "prior_treatments": [],
+    "lab_values": {
+      "hemoglobin": 14.2,
+      "wbc": 9509,
+      "platelets": 383207,
+      "creatinine": 1.67,
+      "bilirubin": 1.34,
+      "alt": 87,
+      "ast": 65
+    },
+    "ecog_status": 2,
+    "smoking_status": "Former",
+    "allergies": [
+      "NSAIDs"
+    ],
+    "clinical_notes": "Patient presents with Ischemic Heart Disease. ECOG 2."
+  },
+  {
+    "patient_id": "ANON_TE_0005",
+    "demographics": {
+      "age": 78,
+      "gender": "Female",
+      "name": "Divya Verma",
+      "city": "Hyderabad",
+      "state": "Telangana",
+      "lat": 17.385,
+      "lng": 78.4867
+    },
+    "diagnosis": {
+      "primary": "Hepatitis B",
+      "subtype": "Chronic",
+      "stage": null,
+      "icd10": "B16",
+      "biomarkers": null
+    },
+    "medical_history": [
+      "Hypothyroidism"
+    ],
+    "medications": [],
+    "prior_treatments": [],
+    "lab_values": {
+      "hemoglobin": 13.0,
+      "wbc": 4444,
+      "platelets": 154811,
+      "creatinine": 1.79,
+      "bilirubin": 0.98,
+      "alt": 23,
+      "ast": 54
+    },
+    "ecog_status": 3,
+    "smoking_status": "Current",
+    "allergies": [
+      "Sulfonamides"
+    ],
+    "clinical_notes": "Patient presents with Hepatitis B. ECOG 3."
+  },
+  {
+    "patient_id": "ANON_TA_0006",
+    "demographics": {
+      "age": 34,
+      "gender": "Female",
+      "name": "Nisha Kapoor",
+      "city": "Chennai",
+      "state": "Tamil Nadu",
+      "lat": 13.0827,
+      "lng": 80.2707
+    },
+    "diagnosis": {
+      "primary": "Pulmonary Tuberculosis",
+      "subtype": "Drug-Sensitive",
+      "stage": null,
+      "icd10": "A15",
+      "biomarkers": null
+    },
+    "medical_history": [
+      "Hypothyroidism"
+    ],
+    "medications": [],
+    "prior_treatments": [],
+    "lab_values": {
+      "hemoglobin": 12.2,
+      "wbc": 8075,
+      "platelets": 339986,
+      "creatinine": 1.54,
+      "bilirubin": 0.86,
+      "alt": 75,
+      "ast": 33
+    },
+    "ecog_status": 3,
+    "smoking_status": "Never",
+    "allergies": [],
+    "clinical_notes": "Patient presents with Pulmonary Tuberculosis. ECOG 3."
+  },
+  {
+    "patient_id": "ANON_MA_0007",
+    "demographics": {
+      "age": 38,
+      "gender": "Male",
+      "name": "Rahul Gupta",
+      "city": "Pune",
+      "state": "Maharashtra",
+      "lat": 18.5204,
+      "lng": 73.8567
+    },
+    "diagnosis": {
+      "primary": "Breast Cancer",
+      "subtype": "Invasive Ductal Carcinoma",
+      "stage": "I",
+      "icd10": "C50",
+      "biomarkers": {
+        "ER": "Negative",
+        "PR": "Positive",
+        "HER2": "Negative"
+      }
+    },
+    "medical_history": [
+      "Hyperlipidemia",
+      "Type 2 Diabetes Mellitus"
+    ],
+    "medications": [
+      "Metformin 500mg BD"
+    ],
+    "prior_treatments": [],
+    "lab_values": {
+      "hemoglobin": 13.1,
+      "wbc": 8192,
+      "platelets": 131119,
+      "creatinine": 1.79,
+      "bilirubin": 0.45,
+      "alt": 80,
+      "ast": 87
+    },
+    "ecog_status": 3,
+    "smoking_status": "Never",
+    "allergies": [
+      "Penicillin"
+    ],
+    "clinical_notes": "Patient presents with Breast Cancer. ECOG 3."
+  },
+  {
+    "patient_id": "ANON_MA_0008",
+    "demographics": {
+      "age": 47,
+      "gender": "Female",
+      "name": "Pooja Reddy",
+      "city": "Pune",
+      "state": "Maharashtra",
+      "lat": 18.5204,
+      "lng": 73.8567
+    },
+    "diagnosis": {
+      "primary": "Colorectal Cancer",
+      "subtype": "Adenocarcinoma",
+      "stage": "IV",
+      "icd10": "C18",
+      "biomarkers": null
+    },
+    "medical_history": [
+      "Hypertension",
+      "Hyperlipidemia"
+    ],
+    "medications": [
+      "Amlodipine 5mg OD"
+    ],
+    "prior_treatments": [],
+    "lab_values": {
+      "hemoglobin": 11.9,
+      "wbc": 6434,
+      "platelets": 139295,
+      "creatinine": 0.78,
+      "bilirubin": 1.55,
+      "alt": 15,
+      "ast": 95
+    },
+    "ecog_status": 2,
+    "smoking_status": "Current",
+    "allergies": [
+      "Penicillin"
+    ],
+    "clinical_notes": "Patient presents with Colorectal Cancer. ECOG 2."
+  },
+  {
+    "patient_id": "ANON_GU_0009",
+    "demographics": {
+      "age": 35,
+      "gender": "Female",
+      "name": "Lakshmi Menon",
+      "city": "Ahmedabad",
+      "state": "Gujarat",
+      "lat": 23.0225,
+      "lng": 72.5714
+    },
+    "diagnosis": {
+      "primary": "Non-Small Cell Lung Cancer",
+      "subtype": "Adenocarcinoma",
+      "stage": "I",
+      "icd10": "C34",
+      "biomarkers": {
+        "EGFR": "Wild Type",
+        "ALK": "Negative",
+        "PD_L1_TPS": 24
+      }
+    },
+    "medical_history": [
+      "Hyperlipidemia",
+      "Hypertension"
+    ],
+    "medications": [
+      "Amlodipine 5mg OD"
+    ],
+    "prior_treatments": [],
+    "lab_values": {
+      "hemoglobin": 15.2,
+      "wbc": 4643,
+      "platelets": 162628,
+      "creatinine": 1.23,
+      "bilirubin": 1.62,
+      "alt": 21,
+      "ast": 75
+    },
+    "ecog_status": 0,
+    "smoking_status": "Current",
+    "allergies": [
+      "NSAIDs"
+    ],
+    "clinical_notes": "Patient presents with Non-Small Cell Lung Cancer. ECOG 0."
+  },
+  {
+    "patient_id": "ANON_DE_0010",
+    "demographics": {
+      "age": 25,
+      "gender": "Male",
+      "name": "Deepak Verma",
+      "city": "Delhi",
+      "state": "Delhi",
+      "lat": 28.6139,
+      "lng": 77.209
+    },
+    "diagnosis": {
+      "primary": "Ischemic Heart Disease",
+      "subtype": "Stable Angina",
+      "stage": null,
+      "icd10": "I25",
+      "biomarkers": null
+    },
+    "medical_history": [],
+    "medications": [],
+    "prior_treatments": [],
+    "lab_values": {
+      "hemoglobin": 11.5,
+      "wbc": 11372,
+      "platelets": 349706,
+      "creatinine": 1.5,
+      "bilirubin": 1.29,
+      "alt": 73,
+      "ast": 61
+    },
+    "ecog_status": 0,
+    "smoking_status": "Former",
+    "allergies": [
+      "NSAIDs"
+    ],
+    "clinical_notes": "Patient presents with Ischemic Heart Disease. ECOG 0."
+  },
+  {
+    "patient_id": "ANON_WE_0011",
+    "demographics": {
+      "age": 51,
+      "gender": "Male",
+      "name": "Ravi Menon",
+      "city": "Kolkata",
+      "state": "West Bengal",
+      "lat": 22.5726,
+      "lng": 88.3639
+    },
+    "diagnosis": {
+      "primary": "Colorectal Cancer",
+      "subtype": "Adenocarcinoma",
+      "stage": "IV",
+      "icd10": "C18",
+      "biomarkers": null
+    },
+    "medical_history": [
+      "Hypothyroidism"
+    ],
+    "medications": [],
+    "prior_treatments": [
+      {
+        "type": "Surgery",
+        "name": "Lumpectomy",
+        "date": "2024-06",
+        "hospital": "Tata Memorial Hospital"
+      }
+    ],
+    "lab_values": {
+      "hemoglobin": 15.2,
+      "wbc": 7371,
+      "platelets": 105106,
+      "creatinine": 1.48,
+      "bilirubin": 1.25,
+      "alt": 45,
+      "ast": 44
+    },
+    "ecog_status": 1,
+    "smoking_status": "Current",
+    "allergies": [],
+    "clinical_notes": "Patient presents with Colorectal Cancer. ECOG 1."
+  },
+  {
+    "patient_id": "ANON_TE_0012",
+    "demographics": {
+      "age": 63,
+      "gender": "Male",
+      "name": "Anil Joshi",
+      "city": "Hyderabad",
+      "state": "Telangana",
+      "lat": 17.385,
+      "lng": 78.4867
+    },
+    "diagnosis": {
+      "primary": "Type 2 Diabetes Mellitus",
+      "subtype": "Uncontrolled",
+      "stage": null,
+      "icd10": "E11",
+      "biomarkers": null
+    },
+    "medical_history": [
+      "Hypothyroidism",
+      "Chronic Kidney Disease"
+    ],
+    "medications": [
+      "Metformin 500mg BD"
+    ],
+    "prior_treatments": [],
+    "lab_values": {
+      "hemoglobin": 15.3,
+      "wbc": 7299,
+      "platelets": 364520,
+      "creatinine": 0.72,
+      "bilirubin": 0.67,
+      "alt": 21,
+      "ast": 87
+    },
+    "ecog_status": 3,
+    "smoking_status": "Never",
+    "allergies": [
+      "Penicillin"
+    ],
+    "clinical_notes": "Patient presents with Type 2 Diabetes Mellitus. ECOG 3."
+  },
+  {
+    "patient_id": "ANON_TE_0013",
+    "demographics": {
+      "age": 38,
+      "gender": "Male",
+      "name": "Ravi Menon",
+      "city": "Hyderabad",
+      "state": "Telangana",
+      "lat": 17.385,
+      "lng": 78.4867
+    },
+    "diagnosis": {
+      "primary": "Stroke",
+      "subtype": "Ischemic",
+      "stage": null,
+      "icd10": "I63",
+      "biomarkers": null
+    },
+    "medical_history": [
+      "Hypothyroidism",
+      "Hypertension"
+    ],
+    "medications": [
+      "Amlodipine 5mg OD"
+    ],
+    "prior_treatments": [],
+    "lab_values": {
+      "hemoglobin": 11.6,
+      "wbc": 9338,
+      "platelets": 369516,
+      "creatinine": 1.06,
+      "bilirubin": 1.06,
+      "alt": 44,
+      "ast": 38
+    },
+    "ecog_status": 3,
+    "smoking_status": "Former",
+    "allergies": [
+      "Sulfonamides"
+    ],
+    "clinical_notes": "Patient presents with Stroke. ECOG 3."
+  },
+  {
+    "patient_id": "ANON_WE_0014",
+    "demographics": {
+      "age": 78,
+      "gender": "Female",
+      "name": "Meera Iyer",
+      "city": "Kolkata",
+      "state": "West Bengal",
+      "lat": 22.5726,
+      "lng": 88.3639
+    },
+    "diagnosis": {
+      "primary": "Hepatitis B",
+      "subtype": "Chronic",
+      "stage": null,
+      "icd10": "B16",
+      "biomarkers": null
+    },
+    "medical_history": [],
+    "medications": [],
+    "prior_treatments": [],
+    "lab_values": {
+      "hemoglobin": 12.9,
+      "wbc": 8254,
+      "platelets": 293549,
+      "creatinine": 1.44,
+      "bilirubin": 0.37,
+      "alt": 73,
+      "ast": 68
+    },
+    "ecog_status": 0,
+    "smoking_status": "Current",
+    "allergies": [],
+    "clinical_notes": "Patient presents with Hepatitis B. ECOG 0."
+  },
+  {
+    "patient_id": "ANON_TA_0015",
+    "demographics": {
+      "age": 40,
+      "gender": "Female",
+      "name": "Aarti Joshi",
+      "city": "Chennai",
+      "state": "Tamil Nadu",
+      "lat": 13.0827,
+      "lng": 80.2707
+    },
+    "diagnosis": {
+      "primary": "Type 2 Diabetes Mellitus",
+      "subtype": "Uncontrolled",
+      "stage": null,
+      "icd10": "E11",
+      "biomarkers": null
+    },
+    "medical_history": [],
+    "medications": [
+      "Metformin 500mg BD"
+    ],
+    "prior_treatments": [],
+    "lab_values": {
+      "hemoglobin": 13.9,
+      "wbc": 11521,
+      "platelets": 382322,
+      "creatinine": 1.08,
+      "bilirubin": 0.48,
+      "alt": 57,
+      "ast": 60
+    },
+    "ecog_status": 2,
+    "smoking_status": "Former",
+    "allergies": [
+      "NSAIDs"
+    ],
+    "clinical_notes": "Patient presents with Type 2 Diabetes Mellitus. ECOG 2."
+  },
+  {
+    "patient_id": "ANON_DE_0016",
+    "demographics": {
+      "age": 67,
+      "gender": "Male",
+      "name": "Ravi Menon",
+      "city": "Delhi",
+      "state": "Delhi",
+      "lat": 28.6139,
+      "lng": 77.209
+    },
+    "diagnosis": {
+      "primary": "Type 2 Diabetes Mellitus",
+      "subtype": "Uncontrolled",
+      "stage": null,
+      "icd10": "E11",
+      "biomarkers": null
+    },
+    "medical_history": [
+      "Type 2 Diabetes Mellitus"
+    ],
+    "medications": [
+      "Metformin 500mg BD"
+    ],
+    "prior_treatments": [],
+    "lab_values": {
+      "hemoglobin": 14.1,
+      "wbc": 11448,
+      "platelets": 154625,
+      "creatinine": 1.61,
+      "bilirubin": 1.99,
+      "alt": 22,
+      "ast": 21
+    },
+    "ecog_status": 1,
+    "smoking_status": "Current",
+    "allergies": [],
+    "clinical_notes": "Patient presents with Type 2 Diabetes Mellitus. ECOG 1."
+  },
+  {
+    "patient_id": "ANON_WE_0017",
+    "demographics": {
+      "age": 49,
+      "gender": "Male",
+      "name": "Sanjay Iyer",
+      "city": "Kolkata",
+      "state": "West Bengal",
+      "lat": 22.5726,
+      "lng": 88.3639
+    },
+    "diagnosis": {
+      "primary": "Ischemic Heart Disease",
+      "subtype": "Stable Angina",
+      "stage": null,
+      "icd10": "I25",
+      "biomarkers": null
+    },
+    "medical_history": [
+      "Hypothyroidism"
+    ],
+    "medications": [],
+    "prior_treatments": [],
+    "lab_values": {
+      "hemoglobin": 10.1,
+      "wbc": 11181,
+      "platelets": 373973,
+      "creatinine": 1.24,
+      "bilirubin": 1.89,
+      "alt": 19,
+      "ast": 88
+    },
+    "ecog_status": 2,
+    "smoking_status": "Former",
+    "allergies": [
+      "NSAIDs"
+    ],
+    "clinical_notes": "Patient presents with Ischemic Heart Disease. ECOG 2."
+  },
+  {
+    "patient_id": "ANON_MA_0018",
+    "demographics": {
+      "age": 31,
+      "gender": "Male",
+      "name": "Vijay Rao",
+      "city": "Pune",
+      "state": "Maharashtra",
+      "lat": 18.5204,
+      "lng": 73.8567
+    },
+    "diagnosis": {
+      "primary": "Hepatitis B",
+      "subtype": "Chronic",
+      "stage": null,
+      "icd10": "B16",
+      "biomarkers": null
+    },
+    "medical_history": [],
+    "medications": [],
+    "prior_treatments": [],
+    "lab_values": {
+      "hemoglobin": 13.8,
+      "wbc": 8987,
+      "platelets": 126867,
+      "creatinine": 1.4,
+      "bilirubin": 0.57,
+      "alt": 47,
+      "ast": 58
+    },
+    "ecog_status": 0,
+    "smoking_status": "Current",
+    "allergies": [
+      "NSAIDs"
+    ],
+    "clinical_notes": "Patient presents with Hepatitis B. ECOG 0."
+  },
+  {
+    "patient_id": "ANON_GU_0019",
+    "demographics": {
+      "age": 55,
+      "gender": "Female",
+      "name": "Ritu Singh",
+      "city": "Ahmedabad",
+      "state": "Gujarat",
+      "lat": 23.0225,
+      "lng": 72.5714
+    },
+    "diagnosis": {
+      "primary": "Pulmonary Tuberculosis",
+      "subtype": "Drug-Sensitive",
+      "stage": null,
+      "icd10": "A15",
+      "biomarkers": null
+    },
+    "medical_history": [],
+    "medications": [],
+    "prior_treatments": [],
+    "lab_values": {
+      "hemoglobin": 10.9,
+      "wbc": 10477,
+      "platelets": 288642,
+      "creatinine": 1.39,
+      "bilirubin": 1.12,
+      "alt": 45,
+      "ast": 88
+    },
+    "ecog_status": 2,
+    "smoking_status": "Current",
+    "allergies": [
+      "NSAIDs"
+    ],
+    "clinical_notes": "Patient presents with Pulmonary Tuberculosis. ECOG 2."
+  },
+  {
+    "patient_id": "ANON_DE_0020",
+    "demographics": {
+      "age": 37,
+      "gender": "Male",
+      "name": "Vikram Singh",
+      "city": "Delhi",
+      "state": "Delhi",
+      "lat": 28.6139,
+      "lng": 77.209
+    },
+    "diagnosis": {
+      "primary": "Stroke",
+      "subtype": "Ischemic",
+      "stage": null,
+      "icd10": "I63",
+      "biomarkers": null
+    },
+    "medical_history": [
+      "Hyperlipidemia"
+    ],
+    "medications": [],
+    "prior_treatments": [],
+    "lab_values": {
+      "hemoglobin": 10.1,
+      "wbc": 11948,
+      "platelets": 224908,
+      "creatinine": 1.31,
+      "bilirubin": 0.55,
+      "alt": 34,
+      "ast": 90
+    },
+    "ecog_status": 1,
+    "smoking_status": "Never",
+    "allergies": [
+      "Sulfonamides"
+    ],
+    "clinical_notes": "Patient presents with Stroke. ECOG 1."
+  },
+  {
+    "patient_id": "ANON_DE_0021",
+    "demographics": {
+      "age": 47,
+      "gender": "Male",
+      "name": "Arun Kapoor",
+      "city": "Delhi",
+      "state": "Delhi",
+      "lat": 28.6139,
+      "lng": 77.209
+    },
+    "diagnosis": {
+      "primary": "Non-Small Cell Lung Cancer",
+      "subtype": "Adenocarcinoma",
+      "stage": "I",
+      "icd10": "C34",
+      "biomarkers": {
+        "EGFR": "Wild Type",
+        "ALK": "Negative",
+        "PD_L1_TPS": 77
+      }
+    },
+    "medical_history": [
+      "Hyperlipidemia",
+      "Hypertension"
+    ],
+    "medications": [
+      "Amlodipine 5mg OD"
+    ],
+    "prior_treatments": [],
+    "lab_values": {
+      "hemoglobin": 12.7,
+      "wbc": 5654,
+      "platelets": 297204,
+      "creatinine": 0.8,
+      "bilirubin": 1.44,
+      "alt": 42,
+      "ast": 77
+    },
+    "ecog_status": 2,
+    "smoking_status": "Current",
+    "allergies": []
+  },
+  {
+    "patient_id": "ANON_MA_0022",
+    "demographics": {
+      "age": 63,
+      "gender": "Female",
+      "name": "Kavitha Nair",
+      "city": "Mumbai",
+      "state": "Maharashtra",
+      "lat": 19.076,
+      "lng": 72.8777
+    },
+    "diagnosis": {
+      "primary": "Ischemic Heart Disease",
+      "subtype": "Stable Angina",
+      "stage": null,
+      "icd10": "I25",
+      "biomarkers": null
+    },
+    "medical_history": [],
+    "medications": [],
+    "prior_treatments": [],
+    "lab_values": {
+      "hemoglobin": 11.0,
+      "wbc": 5816,
+      "platelets": 147618,
+      "creatinine": 1.07,
+      "bilirubin": 1.39,
+      "alt": 34,
+      "ast": 71
+    },
+    "ecog_status": 2,
+    "smoking_status": "Current",
+    "allergies": []
+  },
+  {
+    "patient_id": "ANON_MA_0023",
+    "demographics": {
+      "age": 60,
+      "gender": "Female",
+      "name": "Divya Verma",
+      "city": "Mumbai",
+      "state": "Maharashtra",
+      "lat": 19.076,
+      "lng": 72.8777
+    },
+    "diagnosis": {
+      "primary": "Colorectal Cancer",
+      "subtype": "Adenocarcinoma",
+      "stage": "IIIB",
+      "icd10": "C18",
+      "biomarkers": null
+    },
+    "medical_history": [
+      "Hypothyroidism",
+      "Hypertension"
+    ],
+    "medications": [
+      "Amlodipine 5mg OD"
+    ],
+    "prior_treatments": [
+      {
+        "type": "Surgery",
+        "name": "Lumpectomy",
+        "date": "2024-05",
+        "hospital": "AIIMS Delhi"
+      }
+    ],
+    "lab_values": {
+      "hemoglobin": 10.8,
+      "wbc": 7160,
+      "platelets": 319577,
+      "creatinine": 1.77,
+      "bilirubin": 0.54,
+      "alt": 59,
+      "ast": 43
+    },
+    "ecog_status": 3,
+    "smoking_status": "Former",
+    "allergies": [
+      "Penicillin"
+    ]
+  },
+  {
+    "patient_id": "ANON_GU_0024",
+    "demographics": {
+      "age": 27,
+      "gender": "Female",
+      "name": "Nisha Kapoor",
+      "city": "Ahmedabad",
+      "state": "Gujarat",
+      "lat": 23.0225,
+      "lng": 72.5714
+    },
+    "diagnosis": {
+      "primary": "Breast Cancer",
+      "subtype": "Invasive Ductal Carcinoma",
+      "stage": "II",
+      "icd10": "C50",
+      "biomarkers": {
+        "ER": "Negative",
+        "PR": "Negative",
+        "HER2": "Negative"
+      }
+    },
+    "medical_history": [
+      "Hypertension",
+      "Type 2 Diabetes Mellitus"
+    ],
+    "medications": [
+      "Amlodipine 5mg OD",
+      "Metformin 500mg BD"
+    ],
+    "prior_treatments": [],
+    "lab_values": {
+      "hemoglobin": 13.9,
+      "wbc": 8836,
+      "platelets": 350816,
+      "creatinine": 1.76,
+      "bilirubin": 1.98,
+      "alt": 72,
+      "ast": 94
+    },
+    "ecog_status": 1,
+    "smoking_status": "Former",
+    "allergies": [
+      "Sulfonamides"
+    ]
+  },
+  {
+    "patient_id": "ANON_TE_0025",
+    "demographics": {
+      "age": 60,
+      "gender": "Female",
+      "name": "Pooja Reddy",
+      "city": "Hyderabad",
+      "state": "Telangana",
+      "lat": 17.385,
+      "lng": 78.4867
+    },
+    "diagnosis": {
+      "primary": "Stroke",
+      "subtype": "Ischemic",
+      "stage": null,
+      "icd10": "I63",
+      "biomarkers": null
+    },
+    "medical_history": [
+      "Hyperlipidemia"
+    ],
+    "medications": [],
+    "prior_treatments": [],
+    "lab_values": {
+      "hemoglobin": 13.9,
+      "wbc": 10132,
+      "platelets": 209529,
+      "creatinine": 1.23,
+      "bilirubin": 0.94,
+      "alt": 58,
+      "ast": 71
+    },
+    "ecog_status": 1,
+    "smoking_status": "Current",
+    "allergies": [
+      "NSAIDs"
+    ]
+  },
+  {
+    "patient_id": "ANON_DE_0026",
+    "demographics": {
+      "age": 26,
+      "gender": "Male",
+      "name": "Rahul Gupta",
+      "city": "Delhi",
+      "state": "Delhi",
+      "lat": 28.6139,
+      "lng": 77.209
+    },
+    "diagnosis": {
+      "primary": "Breast Cancer",
+      "subtype": "Invasive Ductal Carcinoma",
+      "stage": "IV",
+      "icd10": "C50",
+      "biomarkers": {
+        "ER": "Positive",
+        "PR": "Negative",
+        "HER2": "Equivocal"
+      }
+    },
+    "medical_history": [],
+    "medications": [],
+    "prior_treatments": [],
+    "lab_values": {
+      "hemoglobin": 11.8,
+      "wbc": 5476,
+      "platelets": 322179,
+      "creatinine": 1.7,
+      "bilirubin": 1.66,
+      "alt": 35,
+      "ast": 87
+    },
+    "ecog_status": 1,
+    "smoking_status": "Current",
+    "allergies": [
+      "Sulfonamides"
+    ]
+  },
+  {
+    "patient_id": "ANON_TE_0027",
+    "demographics": {
+      "age": 33,
+      "gender": "Female",
+      "name": "Kavitha Nair",
+      "city": "Hyderabad",
+      "state": "Telangana",
+      "lat": 17.385,
+      "lng": 78.4867
+    },
+    "diagnosis": {
+      "primary": "Hepatitis B",
+      "subtype": "Chronic",
+      "stage": null,
+      "icd10": "B16",
+      "biomarkers": null
+    },
+    "medical_history": [],
+    "medications": [],
+    "prior_treatments": [],
+    "lab_values": {
+      "hemoglobin": 11.7,
+      "wbc": 9009,
+      "platelets": 368957,
+      "creatinine": 1.03,
+      "bilirubin": 0.93,
+      "alt": 17,
+      "ast": 54
+    },
+    "ecog_status": 1,
+    "smoking_status": "Current",
+    "allergies": []
+  },
+  {
+    "patient_id": "ANON_MA_0028",
+    "demographics": {
+      "age": 63,
+      "gender": "Male",
+      "name": "Nitin Mehta",
+      "city": "Mumbai",
+      "state": "Maharashtra",
+      "lat": 19.076,
+      "lng": 72.8777
+    },
+    "diagnosis": {
+      "primary": "Pulmonary Tuberculosis",
+      "subtype": "Drug-Sensitive",
+      "stage": null,
+      "icd10": "A15",
+      "biomarkers": null
+    },
+    "medical_history": [
+      "Hypertension"
+    ],
+    "medications": [
+      "Amlodipine 5mg OD"
+    ],
+    "prior_treatments": [],
+    "lab_values": {
+      "hemoglobin": 13.2,
+      "wbc": 8835,
+      "platelets": 103216,
+      "creatinine": 0.8,
+      "bilirubin": 0.36,
+      "alt": 72,
+      "ast": 73
+    },
+    "ecog_status": 1,
+    "smoking_status": "Current",
+    "allergies": [
+      "NSAIDs"
+    ]
+  },
+  {
+    "patient_id": "ANON_MA_0029",
+    "demographics": {
+      "age": 55,
+      "gender": "Male",
+      "name": "Prakash Nair",
+      "city": "Mumbai",
+      "state": "Maharashtra",
+      "lat": 19.076,
+      "lng": 72.8777
+    },
+    "diagnosis": {
+      "primary": "Breast Cancer",
+      "subtype": "Invasive Ductal Carcinoma",
+      "stage": "II",
+      "icd10": "C50",
+      "biomarkers": {
+        "ER": "Positive",
+        "PR": "Negative",
+        "HER2": "Equivocal"
+      }
+    },
+    "medical_history": [
+      "Hypothyroidism"
+    ],
+    "medications": [],
+    "prior_treatments": [],
+    "lab_values": {
+      "hemoglobin": 14.8,
+      "wbc": 11307,
+      "platelets": 296060,
+      "creatinine": 1.19,
+      "bilirubin": 1.43,
+      "alt": 33,
+      "ast": 57
+    },
+    "ecog_status": 3,
+    "smoking_status": "Never",
+    "allergies": [
+      "Penicillin"
+    ]
+  },
+  {
+    "patient_id": "ANON_MA_0030",
+    "demographics": {
+      "age": 56,
+      "gender": "Male",
+      "name": "Prakash Nair",
+      "city": "Mumbai",
+      "state": "Maharashtra",
+      "lat": 19.076,
+      "lng": 72.8777
+    },
+    "diagnosis": {
+      "primary": "Non-Small Cell Lung Cancer",
+      "subtype": "Adenocarcinoma",
+      "stage": "IV",
+      "icd10": "C34",
+      "biomarkers": {
+        "EGFR": "Exon 19 Deletion",
+        "ALK": "Positive",
+        "PD_L1_TPS": 83
+      }
+    },
+    "medical_history": [
+      "Type 2 Diabetes Mellitus"
+    ],
+    "medications": [
+      "Metformin 500mg BD"
+    ],
+    "prior_treatments": [],
+    "lab_values": {
+      "hemoglobin": 10.0,
+      "wbc": 7467,
+      "platelets": 237994,
+      "creatinine": 1.71,
+      "bilirubin": 1.3,
+      "alt": 22,
+      "ast": 84
+    },
+    "ecog_status": 2,
+    "smoking_status": "Current",
+    "allergies": [
+      "Sulfonamides"
+    ]
+  },
+  {
+    "patient_id": "ANON_DE_0031",
+    "demographics": {
+      "age": 54,
+      "gender": "Female",
+      "name": "Nisha Kapoor",
+      "city": "Delhi",
+      "state": "Delhi",
+      "lat": 28.6139,
+      "lng": 77.209
+    },
+    "diagnosis": {
+      "primary": "Type 2 Diabetes Mellitus",
+      "subtype": "Uncontrolled",
+      "stage": null,
+      "icd10": "E11",
+      "biomarkers": null
+    },
+    "medical_history": [],
+    "medications": [
+      "Metformin 500mg BD"
+    ],
+    "prior_treatments": [],
+    "lab_values": {
+      "hemoglobin": 13.8,
+      "wbc": 8281,
+      "platelets": 318604,
+      "creatinine": 0.73,
+      "bilirubin": 1.71,
+      "alt": 56,
+      "ast": 50
+    },
+    "ecog_status": 1,
+    "smoking_status": "Former",
+    "allergies": [
+      "Sulfonamides"
+    ]
+  },
+  {
+    "patient_id": "ANON_GU_0032",
+    "demographics": {
+      "age": 72,
+      "gender": "Male",
+      "name": "Vijay Rao",
+      "city": "Ahmedabad",
+      "state": "Gujarat",
+      "lat": 23.0225,
+      "lng": 72.5714
+    },
+    "diagnosis": {
+      "primary": "Breast Cancer",
+      "subtype": "Invasive Ductal Carcinoma",
+      "stage": "IV",
+      "icd10": "C50",
+      "biomarkers": {
+        "ER": "Positive",
+        "PR": "Negative",
+        "HER2": "Equivocal"
+      }
+    },
+    "medical_history": [
+      "Chronic Kidney Disease"
+    ],
+    "medications": [],
+    "prior_treatments": [],
+    "lab_values": {
+      "hemoglobin": 14.9,
+      "wbc": 4697,
+      "platelets": 183610,
+      "creatinine": 1.28,
+      "bilirubin": 1.49,
+      "alt": 49,
+      "ast": 52
+    },
+    "ecog_status": 2,
+    "smoking_status": "Never",
+    "allergies": []
+  },
+  {
+    "patient_id": "ANON_MA_0033",
+    "demographics": {
+      "age": 30,
+      "gender": "Male",
+      "name": "Anil Joshi",
+      "city": "Pune",
+      "state": "Maharashtra",
+      "lat": 18.5204,
+      "lng": 73.8567
+    },
+    "diagnosis": {
+      "primary": "Non-Small Cell Lung Cancer",
+      "subtype": "Adenocarcinoma",
+      "stage": "II",
+      "icd10": "C34",
+      "biomarkers": {
+        "EGFR": "Exon 19 Deletion",
+        "ALK": "Positive",
+        "PD_L1_TPS": 11
+      }
+    },
+    "medical_history": [
+      "Type 2 Diabetes Mellitus"
+    ],
+    "medications": [
+      "Metformin 500mg BD"
+    ],
+    "prior_treatments": [],
+    "lab_values": {
+      "hemoglobin": 11.7,
+      "wbc": 4584,
+      "platelets": 317685,
+      "creatinine": 1.1,
+      "bilirubin": 0.5,
+      "alt": 68,
+      "ast": 93
+    },
+    "ecog_status": 3,
+    "smoking_status": "Current",
+    "allergies": [
+      "Penicillin"
+    ]
+  },
+  {
+    "patient_id": "ANON_TA_0034",
+    "demographics": {
+      "age": 73,
+      "gender": "Male",
+      "name": "Arjun Patel",
+      "city": "Chennai",
+      "state": "Tamil Nadu",
+      "lat": 13.0827,
+      "lng": 80.2707
+    },
+    "diagnosis": {
+      "primary": "Colorectal Cancer",
+      "subtype": "Adenocarcinoma",
+      "stage": "I",
+      "icd10": "C18",
+      "biomarkers": null
+    },
+    "medical_history": [
+      "Chronic Kidney Disease"
+    ],
+    "medications": [],
+    "prior_treatments": [],
+    "lab_values": {
+      "hemoglobin": 9.9,
+      "wbc": 11091,
+      "platelets": 306696,
+      "creatinine": 1.78,
+      "bilirubin": 1.91,
+      "alt": 96,
+      "ast": 42
+    },
+    "ecog_status": 0,
+    "smoking_status": "Former",
+    "allergies": [
+      "Sulfonamides"
+    ]
+  },
+  {
+    "patient_id": "ANON_TE_0035",
+    "demographics": {
+      "age": 38,
+      "gender": "Male",
+      "name": "Suresh Reddy",
+      "city": "Hyderabad",
+      "state": "Telangana",
+      "lat": 17.385,
+      "lng": 78.4867
+    },
+    "diagnosis": {
+      "primary": "Colorectal Cancer",
+      "subtype": "Adenocarcinoma",
+      "stage": "IIIA",
+      "icd10": "C18",
+      "biomarkers": null
+    },
+    "medical_history": [
+      "Chronic Kidney Disease"
+    ],
+    "medications": [],
+    "prior_treatments": [],
+    "lab_values": {
+      "hemoglobin": 14.9,
+      "wbc": 11942,
+      "platelets": 116905,
+      "creatinine": 0.8,
+      "bilirubin": 0.9,
+      "alt": 38,
+      "ast": 66
+    },
+    "ecog_status": 2,
+    "smoking_status": "Former",
+    "allergies": [
+      "Sulfonamides"
+    ]
+  },
+  {
+    "patient_id": "ANON_MA_0036",
+    "demographics": {
+      "age": 70,
+      "gender": "Male",
+      "name": "Arjun Patel",
+      "city": "Pune",
+      "state": "Maharashtra",
+      "lat": 18.5204,
+      "lng": 73.8567
+    },
+    "diagnosis": {
+      "primary": "Hepatitis B",
+      "subtype": "Chronic",
+      "stage": null,
+      "icd10": "B16",
+      "biomarkers": null
+    },
+    "medical_history": [
+      "Chronic Kidney Disease"
+    ],
+    "medications": [],
+    "prior_treatments": [],
+    "lab_values": {
+      "hemoglobin": 14.3,
+      "wbc": 7610,
+      "platelets": 198351,
+      "creatinine": 1.17,
+      "bilirubin": 1.04,
+      "alt": 77,
+      "ast": 50
+    },
+    "ecog_status": 1,
+    "smoking_status": "Never",
+    "allergies": [
+      "NSAIDs"
+    ]
+  },
+  {
+    "patient_id": "ANON_KA_0037",
+    "demographics": {
+      "age": 36,
+      "gender": "Female",
+      "name": "Pooja Reddy",
+      "city": "Bangalore",
+      "state": "Karnataka",
+      "lat": 12.9716,
+      "lng": 77.5946
+    },
+    "diagnosis": {
+      "primary": "Non-Small Cell Lung Cancer",
+      "subtype": "Adenocarcinoma",
+      "stage": "IV",
+      "icd10": "C34",
+      "biomarkers": {
+        "EGFR": "T790M Positive",
+        "ALK": "Positive",
+        "PD_L1_TPS": 96
+      }
+    },
+    "medical_history": [
+      "Chronic Kidney Disease",
+      "Hypertension"
+    ],
+    "medications": [
+      "Amlodipine 5mg OD"
+    ],
+    "prior_treatments": [],
+    "lab_values": {
+      "hemoglobin": 15.0,
+      "wbc": 9058,
+      "platelets": 254945,
+      "creatinine": 0.76,
+      "bilirubin": 0.44,
+      "alt": 20,
+      "ast": 61
+    },
+    "ecog_status": 0,
+    "smoking_status": "Former",
+    "allergies": []
+  },
+  {
+    "patient_id": "ANON_DE_0038",
+    "demographics": {
+      "age": 30,
+      "gender": "Male",
+      "name": "Rajesh Kumar",
+      "city": "Delhi",
+      "state": "Delhi",
+      "lat": 28.6139,
+      "lng": 77.209
+    },
+    "diagnosis": {
+      "primary": "Hepatitis B",
+      "subtype": "Chronic",
+      "stage": null,
+      "icd10": "B16",
+      "biomarkers": null
+    },
+    "medical_history": [],
+    "medications": [],
+    "prior_treatments": [],
+    "lab_values": {
+      "hemoglobin": 15.4,
+      "wbc": 4068,
+      "platelets": 386538,
+      "creatinine": 1.65,
+      "bilirubin": 0.53,
+      "alt": 48,
+      "ast": 37
+    },
+    "ecog_status": 2,
+    "smoking_status": "Current",
+    "allergies": [
+      "Penicillin"
+    ]
+  },
+  {
+    "patient_id": "ANON_WE_0039",
+    "demographics": {
+      "age": 46,
+      "gender": "Female",
+      "name": "Priya Sharma",
+      "city": "Kolkata",
+      "state": "West Bengal",
+      "lat": 22.5726,
+      "lng": 88.3639
+    },
+    "diagnosis": {
+      "primary": "Breast Cancer",
+      "subtype": "Invasive Ductal Carcinoma",
+      "stage": "I",
+      "icd10": "C50",
+      "biomarkers": {
+        "ER": "Negative",
+        "PR": "Positive",
+        "HER2": "Negative"
+      }
+    },
+    "medical_history": [],
+    "medications": [],
+    "prior_treatments": [],
+    "lab_values": {
+      "hemoglobin": 11.6,
+      "wbc": 10034,
+      "platelets": 155411,
+      "creatinine": 1.12,
+      "bilirubin": 0.9,
+      "alt": 63,
+      "ast": 43
+    },
+    "ecog_status": 1,
+    "smoking_status": "Current",
+    "allergies": [
+      "Penicillin"
+    ]
+  },
+  {
+    "patient_id": "ANON_WE_0040",
+    "demographics": {
+      "age": 69,
+      "gender": "Female",
+      "name": "Sunita Gupta",
+      "city": "Kolkata",
+      "state": "West Bengal",
+      "lat": 22.5726,
+      "lng": 88.3639
+    },
+    "diagnosis": {
+      "primary": "Ischemic Heart Disease",
+      "subtype": "Stable Angina",
+      "stage": null,
+      "icd10": "I25",
+      "biomarkers": null
+    },
+    "medical_history": [
+      "Hypothyroidism",
+      "Chronic Kidney Disease"
+    ],
+    "medications": [],
+    "prior_treatments": [],
+    "lab_values": {
+      "hemoglobin": 15.1,
+      "wbc": 6286,
+      "platelets": 229722,
+      "creatinine": 1.76,
+      "bilirubin": 1.35,
+      "alt": 31,
+      "ast": 40
+    },
+    "ecog_status": 1,
+    "smoking_status": "Never",
+    "allergies": [
+      "Penicillin"
+    ]
+  },
+  {
+    "patient_id": "ANON_GU_0041",
+    "demographics": {
+      "age": 41,
+      "gender": "Male",
+      "name": "Anil Joshi",
+      "city": "Ahmedabad",
+      "state": "Gujarat",
+      "lat": 23.0225,
+      "lng": 72.5714
+    },
+    "diagnosis": {
+      "primary": "Non-Small Cell Lung Cancer",
+      "subtype": "Adenocarcinoma",
+      "stage": "I",
+      "icd10": "C34",
+      "biomarkers": {
+        "EGFR": "Exon 19 Deletion",
+        "ALK": "Positive",
+        "PD_L1_TPS": 40
+      }
+    },
+    "medical_history": [
+      "Chronic Kidney Disease",
+      "Hypertension"
+    ],
+    "medications": [
+      "Amlodipine 5mg OD"
+    ],
+    "prior_treatments": [],
+    "lab_values": {
+      "hemoglobin": 10.4,
+      "wbc": 5380,
+      "platelets": 360437,
+      "creatinine": 1.67,
+      "bilirubin": 1.4,
+      "alt": 28,
+      "ast": 19
+    },
+    "ecog_status": 2,
+    "smoking_status": "Current",
+    "allergies": [
+      "NSAIDs"
+    ]
+  },
+  {
+    "patient_id": "ANON_WE_0042",
+    "demographics": {
+      "age": 58,
+      "gender": "Male",
+      "name": "Arun Kapoor",
+      "city": "Kolkata",
+      "state": "West Bengal",
+      "lat": 22.5726,
+      "lng": 88.3639
+    },
+    "diagnosis": {
+      "primary": "Stroke",
+      "subtype": "Ischemic",
+      "stage": null,
+      "icd10": "I63",
+      "biomarkers": null
+    },
+    "medical_history": [],
+    "medications": [],
+    "prior_treatments": [],
+    "lab_values": {
+      "hemoglobin": 11.6,
+      "wbc": 4186,
+      "platelets": 297961,
+      "creatinine": 0.78,
+      "bilirubin": 0.48,
+      "alt": 48,
+      "ast": 20
+    },
+    "ecog_status": 1,
+    "smoking_status": "Former",
+    "allergies": [
+      "NSAIDs"
+    ]
+  },
+  {
+    "patient_id": "ANON_WE_0043",
+    "demographics": {
+      "age": 46,
+      "gender": "Male",
+      "name": "Prakash Nair",
+      "city": "Kolkata",
+      "state": "West Bengal",
+      "lat": 22.5726,
+      "lng": 88.3639
+    },
+    "diagnosis": {
+      "primary": "Stroke",
+      "subtype": "Ischemic",
+      "stage": null,
+      "icd10": "I63",
+      "biomarkers": null
+    },
+    "medical_history": [
+      "Hypertension",
+      "Hyperlipidemia"
+    ],
+    "medications": [
+      "Amlodipine 5mg OD"
+    ],
+    "prior_treatments": [],
+    "lab_values": {
+      "hemoglobin": 14.6,
+      "wbc": 11506,
+      "platelets": 222807,
+      "creatinine": 1.31,
+      "bilirubin": 0.63,
+      "alt": 21,
+      "ast": 87
+    },
+    "ecog_status": 3,
+    "smoking_status": "Never",
+    "allergies": [
+      "NSAIDs"
+    ]
+  },
+  {
+    "patient_id": "ANON_TE_0044",
+    "demographics": {
+      "age": 40,
+      "gender": "Female",
+      "name": "Meera Iyer",
+      "city": "Hyderabad",
+      "state": "Telangana",
+      "lat": 17.385,
+      "lng": 78.4867
+    },
+    "diagnosis": {
+      "primary": "Hepatitis B",
+      "subtype": "Chronic",
+      "stage": null,
+      "icd10": "B16",
+      "biomarkers": null
+    },
+    "medical_history": [],
+    "medications": [],
+    "prior_treatments": [],
+    "lab_values": {
+      "hemoglobin": 14.9,
+      "wbc": 10016,
+      "platelets": 204858,
+      "creatinine": 0.86,
+      "bilirubin": 0.4,
+      "alt": 18,
+      "ast": 84
+    },
+    "ecog_status": 3,
+    "smoking_status": "Never",
+    "allergies": [
+      "Penicillin"
+    ]
+  },
+  {
+    "patient_id": "ANON_MA_0045",
+    "demographics": {
+      "age": 43,
+      "gender": "Female",
+      "name": "Pallavi Mehta",
+      "city": "Mumbai",
+      "state": "Maharashtra",
+      "lat": 19.076,
+      "lng": 72.8777
+    },
+    "diagnosis": {
+      "primary": "Hepatitis B",
+      "subtype": "Chronic",
+      "stage": null,
+      "icd10": "B16",
+      "biomarkers": null
+    },
+    "medical_history": [
+      "Hypertension"
+    ],
+    "medications": [
+      "Amlodipine 5mg OD"
+    ],
+    "prior_treatments": [],
+    "lab_values": {
+      "hemoglobin": 13.3,
+      "wbc": 5520,
+      "platelets": 276981,
+      "creatinine": 0.83,
+      "bilirubin": 1.43,
+      "alt": 90,
+      "ast": 29
+    },
+    "ecog_status": 3,
+    "smoking_status": "Current",
+    "allergies": [
+      "NSAIDs"
+    ]
+  },
+  {
+    "patient_id": "ANON_GU_0046",
+    "demographics": {
+      "age": 40,
+      "gender": "Female",
+      "name": "Pallavi Mehta",
+      "city": "Ahmedabad",
+      "state": "Gujarat",
+      "lat": 23.0225,
+      "lng": 72.5714
+    },
+    "diagnosis": {
+      "primary": "Breast Cancer",
+      "subtype": "Invasive Ductal Carcinoma",
+      "stage": "IV",
+      "icd10": "C50",
+      "biomarkers": {
+        "ER": "Positive",
+        "PR": "Negative",
+        "HER2": "Negative"
+      }
+    },
+    "medical_history": [
+      "Hypertension",
+      "Chronic Kidney Disease"
+    ],
+    "medications": [
+      "Amlodipine 5mg OD"
+    ],
+    "prior_treatments": [],
+    "lab_values": {
+      "hemoglobin": 15.0,
+      "wbc": 9167,
+      "platelets": 107451,
+      "creatinine": 1.02,
+      "bilirubin": 1.58,
+      "alt": 65,
+      "ast": 19
+    },
+    "ecog_status": 2,
+    "smoking_status": "Never",
+    "allergies": [
+      "NSAIDs"
+    ]
+  },
+  {
+    "patient_id": "ANON_WE_0047",
+    "demographics": {
+      "age": 64,
+      "gender": "Male",
+      "name": "Kiran Shah",
+      "city": "Kolkata",
+      "state": "West Bengal",
+      "lat": 22.5726,
+      "lng": 88.3639
+    },
+    "diagnosis": {
+      "primary": "Hepatitis B",
+      "subtype": "Chronic",
+      "stage": null,
+      "icd10": "B16",
+      "biomarkers": null
+    },
+    "medical_history": [
+      "Chronic Kidney Disease",
+      "Type 2 Diabetes Mellitus"
+    ],
+    "medications": [
+      "Metformin 500mg BD"
+    ],
+    "prior_treatments": [],
+    "lab_values": {
+      "hemoglobin": 12.7,
+      "wbc": 6633,
+      "platelets": 273039,
+      "creatinine": 1.6,
+      "bilirubin": 0.8,
+      "alt": 44,
+      "ast": 86
+    },
+    "ecog_status": 1,
+    "smoking_status": "Former",
+    "allergies": []
+  },
+  {
+    "patient_id": "ANON_DE_0048",
+    "demographics": {
+      "age": 61,
+      "gender": "Male",
+      "name": "Vijay Rao",
+      "city": "Delhi",
+      "state": "Delhi",
+      "lat": 28.6139,
+      "lng": 77.209
+    },
+    "diagnosis": {
+      "primary": "Pulmonary Tuberculosis",
+      "subtype": "Drug-Sensitive",
+      "stage": null,
+      "icd10": "A15",
+      "biomarkers": null
+    },
+    "medical_history": [
+      "Type 2 Diabetes Mellitus",
+      "Hypothyroidism"
+    ],
+    "medications": [
+      "Metformin 500mg BD"
+    ],
+    "prior_treatments": [],
+    "lab_values": {
+      "hemoglobin": 14.8,
+      "wbc": 10490,
+      "platelets": 338604,
+      "creatinine": 0.69,
+      "bilirubin": 1.35,
+      "alt": 21,
+      "ast": 93
+    },
+    "ecog_status": 2,
+    "smoking_status": "Current",
+    "allergies": []
+  },
+  {
+    "patient_id": "ANON_MA_0049",
+    "demographics": {
+      "age": 34,
+      "gender": "Male",
+      "name": "Prakash Nair",
+      "city": "Mumbai",
+      "state": "Maharashtra",
+      "lat": 19.076,
+      "lng": 72.8777
+    },
+    "diagnosis": {
+      "primary": "Type 2 Diabetes Mellitus",
+      "subtype": "Uncontrolled",
+      "stage": null,
+      "icd10": "E11",
+      "biomarkers": null
+    },
+    "medical_history": [],
+    "medications": [
+      "Metformin 500mg BD"
+    ],
+    "prior_treatments": [],
+    "lab_values": {
+      "hemoglobin": 11.1,
+      "wbc": 8124,
+      "platelets": 276064,
+      "creatinine": 1.59,
+      "bilirubin": 1.52,
+      "alt": 100,
+      "ast": 67
+    },
+    "ecog_status": 0,
+    "smoking_status": "Never",
+    "allergies": [
+      "Sulfonamides"
+    ]
+  },
+  {
+    "patient_id": "ANON_TE_0050",
+    "demographics": {
+      "age": 65,
+      "gender": "Female",
+      "name": "Lakshmi Menon",
+      "city": "Hyderabad",
+      "state": "Telangana",
+      "lat": 17.385,
+      "lng": 78.4867
+    },
+    "diagnosis": {
+      "primary": "Pulmonary Tuberculosis",
+      "subtype": "Drug-Sensitive",
+      "stage": null,
+      "icd10": "A15",
+      "biomarkers": null
+    },
+    "medical_history": [],
+    "medications": [],
+    "prior_treatments": [],
+    "lab_values": {
+      "hemoglobin": 13.3,
+      "wbc": 4447,
+      "platelets": 280392,
+      "creatinine": 1.65,
+      "bilirubin": 1.71,
+      "alt": 15,
+      "ast": 92
+    },
+    "ecog_status": 2,
+    "smoking_status": "Current",
+    "allergies": []
+  },
+  {
+    "patient_id": "NCT07361510_PATIENT",
+    "demographics": {
+      "age": 55,
+      "gender": "Male",
+      "name": null,
+      "city": "Chennai",
+      "state": "Tamil Nadu",
+      "lat": null,
+      "lng": null
+    },
+    "diagnosis": {
+      "primary": "Non-Small Cell Lung Cancer",
+      "subtype": null,
+      "stage": null,
+      "icd10": null,
+      "biomarkers": null
+    },
+    "medical_history": [],
+    "medications": [],
+    "prior_treatments": [],
+    "lab_values": null,
+    "ecog_status": null,
+    "smoking_status": null,
+    "allergies": [],
+    "clinical_notes": null
+  },
+  {
+    "patient_id": "MH-2024-08831",
+    "demographics": {
+      "age": 61,
+      "gender": "Male",
+      "name": "Rajesh Kumar Verma",
+      "city": "Mumbai",
+      "state": "Maharashtra",
+      "lat": 19.076,
+      "lng": 72.8777
+    },
+    "diagnosis": {
+      "primary": "Non-small cell lung cancer",
+      "subtype": "adenocarcinoma",
+      "stage": "Stage IV",
+      "icd10": null,
+      "biomarkers": {
+        "KRAS": "G12C mut+",
+        "PDL1": "TPS 15%",
+        "EGFR": "wild-type",
+        "ALK": "neg"
+      }
+    },
+    "medical_history": [
+      "Hypertension",
+      "Hyperlipidemia"
+    ],
+    "medications": [
+      "amlodipine 5mg",
+      "atorvastatin 20mg"
+    ],
+    "prior_treatments": [],
+    "lab_values": {
+      "hemoglobin": 11.8,
+      "wbc": 6.8,
+      "platelets": 195.0,
+      "creatinine": 0.9,
+      "bilirubin": 0.8,
+      "alt": 32.0,
+      "ast": 28.0
+    },
+    "ecog_status": 1,
+    "smoking_status": "Former",
+    "allergies": [],
+    "clinical_notes": "Newly diagnosed Stage IV NSCLC adenocarcinoma with KRAS G12C mutation. Former smoker with 30 pack-years. Candidate for clinical trial enrollment."
+  }
+]

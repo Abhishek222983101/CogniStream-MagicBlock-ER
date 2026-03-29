@@ -1,0 +1,147 @@
+DISCHARGE SUMMARY
+==========================================
+Apollo Hospitals, Bandra West, Mumbai 400050
+Department of Pulmonary Medicine & Oncology
+
+Patient Name: Rajesh Kumar Verma
+MRN: MH-2024-08831
+DOB: 12/05/1963 (Age: 61 years)
+Gender: Male
+Aadhaar (last 4): XXXX-7842
+Address: 42, Pali Hill Road, Flat 12B, Bandra West, Mumbai 400050
+Phone: +91 98765 43210
+Emergency Contact: Smt. Meera Verma (Wife) — +91 98765 43211
+
+Date of Admission: 25/02/2026
+Date of Discharge: 03/03/2026
+Attending Physician: Dr. Priya Sharma, MD Pulmonology
+Consulting Oncologist: Dr. Vikram Patel, DM Medical Oncology
+
+ADMITTING DIAGNOSIS:
+Non-small cell lung cancer — adenocarcinoma, Stage IV (T3N2M1a)
+Right upper lobe mass with contralateral pulmonary nodules
+
+CHIEF COMPLAINT:
+61 y/o male presents with persistent dry cough x 3 months, progressive dyspnea on exertion, right-sided chest pain. 8kg weight loss over past 4 months. Referred from local physician after abnormal CXR.
+
+HISTORY OF PRESENT ILLNESS:
+Patient was in his usual state of health until approx. Nov 2025 when he developed a persistent non-productive cough. Initially treated with antibiotics and cough suppressants by local GP without improvement. Cough worsened in Jan 2026 with associated hemoptysis (streaky, intermittent). Progressive exertional dyspnea noted — can walk only ~200m before SOB. Right-sided pleuritic chest pain, dull and constant. Significant unintentional weight loss (74kg -> 66kg over 4 months). No fever, no night sweats. Appetite decreased.
+
+PAST MEDICAL HISTORY:
+1. Hypertension — diagnosed 2015, on Amlodipine 5mg OD, well controlled
+2. Hyperlipidemia — diagnosed 2018, on Atorvastatin 20mg HS
+3. No history of diabetes, TB, asthma, or COPD
+4. No prior surgeries
+5. No prior malignancy
+
+SMOKING HISTORY:
+Former smoker. Smoked 1 pack/day x 30 years (30 pack-years). Quit in 2019.
+
+FAMILY HISTORY:
+Father — died of MI age 72
+Mother — alive, age 85, HTN
+Brother — diagnosed with colon cancer age 58
+
+MEDICATIONS ON ADMISSION:
+1. Amlodipine 5mg PO daily
+2. Atorvastatin 20mg PO at bedtime
+3. Tab Pantoprazole 40mg PO OD (self-prescribed for heartburn)
+
+ALLERGIES: NKDA (No Known Drug Allergies)
+
+FUNCTIONAL STATUS:
+ECOG Performance Status: 1 (Restricted in physically strenuous activity but ambulatory)
+KPS: 80%
+ADLs: Independent
+
+PHYSICAL EXAMINATION:
+Vitals: BP 138/82, HR 88, RR 20, SpO2 94% RA, Temp 98.4F
+General: Alert, oriented, thin but not cachectic. Mild respiratory distress at rest.
+HEENT: No lymphadenopathy cervical/supraclavicular
+Chest: Decreased breath sounds RUL. Dull to percussion RUL. No wheezing.
+CVS: S1S2 normal, no murmur
+Abdomen: Soft, non-tender, no organomegaly
+Extremities: No clubbing (mild), no edema
+Neuro: Grossly intact
+
+INVESTIGATIONS:
+
+CT Chest with contrast (26/02/2026):
+- 4.2 cm spiculated mass in RUL with mediastinal invasion
+- Enlarged ipsilateral mediastinal LNs (stations 4R, 7) — largest 2.8cm
+- Multiple bilateral pulmonary nodules (3-8mm) — likely metastatic
+- Small right pleural effusion
+- No liver or adrenal metastases on limited views
+
+PET-CT (27/02/2026):
+- Hypermetabolic RUL mass (SUVmax 14.2)
+- Hypermetabolic mediastinal LNs (SUVmax 8.6)
+- FDG-avid bilateral pulmonary nodules
+- No distant extrathoracic metastases
+- Staging: T3N2M1a — Stage IVA
+
+Brain MRI (28/02/2026):
+- No intracranial metastases
+
+CT-guided biopsy RUL mass (27/02/2026):
+- Histopathology: Adenocarcinoma, moderately differentiated
+- TTF-1 positive, p40 negative, CK7 positive
+- Confirms primary lung adenocarcinoma
+
+MOLECULAR/BIOMARKER PANEL:
+- EGFR: Wild-type (no mutations detected)
+- ALK: Negative (IHC and FISH)
+- ROS1: Negative
+- KRAS: G12C mutation POSITIVE
+- BRAF: Wild-type
+- MET exon 14: Negative
+- PD-L1 (TPS): 15% (22C3 antibody)
+- TMB: 8.2 mut/Mb (intermediate)
+
+LABORATORY VALUES (01/03/2026):
+Hemoglobin: 11.8 g/dL (L)
+WBC: 6,800/uL
+Platelets: 195,000/uL
+Creatinine: 0.9 mg/dL
+BUN: 18 mg/dL
+Bilirubin (total): 0.8 mg/dL
+ALT/SGPT: 32 U/L
+AST/SGOT: 28 U/L
+ALP: 92 U/L
+Albumin: 3.6 g/dL
+LDH: 248 U/L (mildly elevated)
+CEA: 12.4 ng/mL (elevated)
+INR: 1.1
+
+ASSESSMENT & PLAN:
+1. Newly diagnosed Stage IVA NSCLC, adenocarcinoma, KRAS G12C mutant
+2. PD-L1 TPS 15% — not high enough for single-agent immunotherapy
+3. KRAS G12C — potentially eligible for sotorasib/adagrasib or clinical trials
+4. Good PS (ECOG 1) — suitable for systemic therapy
+5. No brain metastases — favorable
+
+RECOMMENDATIONS:
+- Refer to clinical trial coordinator for evaluation of eligibility for:
+  * KRAS G12C inhibitor trials
+  * Combination immunotherapy + chemotherapy trials
+  * Novel targeted therapy trials
+- If no suitable trial: consider carboplatin + pemetrexed + pembrolizumab as first-line
+- Repeat imaging in 6-8 weeks after starting therapy
+- Supportive care: nutritional counseling, pulmonary rehabilitation
+- Follow-up in OPD in 1 week with Dr. Patel
+
+DISCHARGE MEDICATIONS:
+1. Amlodipine 5mg PO OD
+2. Atorvastatin 20mg PO HS
+3. Pantoprazole 40mg PO OD (before breakfast)
+4. Tab Codeine phosphate 15mg PO TID PRN for cough
+5. Multivitamin 1 tab PO OD
+
+DISCHARGE CONDITION: Stable, ambulatory
+
+FOLLOW-UP: OPD appointment — Dr. Vikram Patel, 10/03/2026 at 10:00 AM
+
+Dictated by: Dr. Priya Sharma, MD
+Reviewed by: Dr. Vikram Patel, DM
+
+(This document contains protected health information. Handle per institutional privacy policy.)

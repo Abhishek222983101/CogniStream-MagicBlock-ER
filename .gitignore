@@ -1,0 +1,17 @@
+.env
+__pycache__/
+*.pyc
+.venv/
+models/
+wandb/
+*.safetensors
+*.bin
+*.pt
+training.log
+
+# Frontend
+frontend/node_modules/
+frontend/.next/
+frontend/.env.local
+frontend/out/
+frontend/.vercel/
