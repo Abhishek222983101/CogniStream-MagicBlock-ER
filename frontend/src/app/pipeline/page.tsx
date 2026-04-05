@@ -248,6 +248,10 @@ export default function PipelinePage() {
   const addLog = useCallback(
     (message: string, type: ProcessingLog["type"] = "info") => {
       const id = nextLogId();
+      // Also print to browser console for debugging
+      if (message) {
+        console.log(`[${type.toUpperCase()}] ${message}`);
+      }
       setProcessingLogs((prev) => [
         ...prev,
         { id, message, type, timestamp: ts() },
@@ -743,20 +747,23 @@ export default function PipelinePage() {
         
         const topMatch = data.matches[0];
         
-        // Run the ER pipeline asynchronously
-        runERPipeline(
-          patientId,
-          dataToMatch,
-          {
-            trial_id: topMatch.trial_id,
-            composite_score: topMatch.composite_score,
-            score_breakdown: topMatch.score_breakdown,
-            criteria_results: topMatch.criteria_results,
-          }
-        ).catch((err) => {
+        // Run the ER pipeline and WAIT for it to complete before showing results
+        try {
+          await runERPipeline(
+            patientId,
+            dataToMatch,
+            {
+              trial_id: topMatch.trial_id,
+              composite_score: topMatch.composite_score,
+              score_breakdown: topMatch.score_breakdown,
+              criteria_results: topMatch.criteria_results,
+            }
+          );
+          addLog("ER: Pipeline completed successfully!", "success");
+        } catch (err) {
           console.error("ER pipeline error:", err);
           addLog(`ER: Pipeline error - ${err instanceof Error ? err.message : "Unknown"}`, "error");
-        });
+        }
       }
     }
 
@@ -1634,7 +1641,7 @@ export default function PipelinePage() {
               )}
 
               {/* ─── MagicBlock ER Verification Panel ─────────────────────────────── */}
-              {(solanaTxSignature || solanaLoading || solanaError || patientPda || erLoading) && (
+              {(solanaTxSignature || solanaLoading || solanaError || patientPda || erLoading || erState.initPatient !== null) && (
                 <div className={`mb-8 border-2 p-5 max-w-2xl w-full ${
                   solanaTxSignature 
                     ? "border-[#14F195] bg-gradient-to-br from-[#9945FF]/5 via-transparent to-[#14F195]/10" 
