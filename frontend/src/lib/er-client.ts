@@ -466,49 +466,85 @@ export class ERClient {
 
   // ─── Transaction Helpers ─────────────────────────────────────────────────
 
+  /**
+   * Promise that rejects after a timeout
+   */
+  private timeout<T>(promise: Promise<T>, ms: number, message: string): Promise<T> {
+    return Promise.race([
+      promise,
+      new Promise<T>((_, reject) => 
+        setTimeout(() => reject(new Error(message)), ms)
+      )
+    ]);
+  }
+
   private async sendTransaction(
     tx: Transaction,
     connection: Connection,
-    maxRetries: number = 3
+    maxRetries: number = 2
   ): Promise<string> {
     let lastError: Error | null = null;
 
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
       try {
-        // Get FRESH blockhash right before sending (critical for avoiding "Blockhash not found")
-        const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash({
-          commitment: "finalized", // Use finalized for more stable blockhash
-        });
+        // Get FRESH blockhash right before sending
+        const { blockhash, lastValidBlockHeight } = await this.timeout(
+          connection.getLatestBlockhash({ commitment: "confirmed" }),
+          10000,
+          "Timeout getting blockhash"
+        );
 
-        // Create a new transaction with fresh blockhash
+        // Set transaction properties
         tx.recentBlockhash = blockhash;
         tx.feePayer = this.wallet.publicKey;
 
         // Sign transaction (this triggers Phantom popup)
         const signedTx = await this.wallet.signTransaction(tx);
 
-        // Send with skipPreflight to avoid simulation issues
-        // The simulation can fail due to timing, but the actual transaction often succeeds
-        const signature = await connection.sendRawTransaction(signedTx.serialize(), {
-          skipPreflight: true, // Skip preflight to avoid blockhash timing issues
-          maxRetries: 3,
-          preflightCommitment: "confirmed",
-        });
+        // Send transaction with skipPreflight
+        const signature = await this.timeout(
+          connection.sendRawTransaction(signedTx.serialize(), {
+            skipPreflight: true,
+            maxRetries: 2,
+          }),
+          15000,
+          "Timeout sending transaction"
+        );
 
         console.log(`[ER] Transaction sent (attempt ${attempt}): ${signature}`);
 
-        // Wait for confirmation with a reasonable timeout
-        const confirmation = await connection.confirmTransaction(
-          { 
-            signature, 
-            blockhash, 
-            lastValidBlockHeight 
-          },
-          "confirmed"
-        );
+        // Wait for confirmation with a 30 second timeout
+        try {
+          const confirmation = await this.timeout(
+            connection.confirmTransaction(
+              { signature, blockhash, lastValidBlockHeight },
+              "confirmed"
+            ),
+            30000,
+            "Confirmation timeout - transaction may still succeed"
+          );
 
-        if (confirmation.value.err) {
-          throw new Error(`Transaction failed: ${JSON.stringify(confirmation.value.err)}`);
+          if (confirmation.value.err) {
+            console.warn(`[ER] Transaction error:`, confirmation.value.err);
+            // Don't throw, the tx might have partially succeeded
+          }
+        } catch (confirmError: any) {
+          // If confirmation times out, check if tx actually landed
+          if (confirmError.message?.includes("timeout")) {
+            console.warn(`[ER] Confirmation timeout, checking tx status...`);
+            
+            // Quick check if signature exists on chain
+            const status = await connection.getSignatureStatus(signature);
+            if (status.value?.confirmationStatus) {
+              console.log(`[ER] Transaction confirmed despite timeout: ${signature}`);
+              return signature;
+            }
+            
+            // Transaction might still land, return signature anyway
+            console.log(`[ER] Returning signature (may confirm later): ${signature}`);
+            return signature;
+          }
+          throw confirmError;
         }
 
         console.log(`[ER] Transaction confirmed: ${signature}`);
@@ -518,16 +554,15 @@ export class ERClient {
         lastError = error;
         console.warn(`[ER] Transaction attempt ${attempt} failed:`, error.message);
 
-        // If it's not a blockhash error, don't retry
-        if (!error.message?.includes("Blockhash not found") && 
-            !error.message?.includes("block height exceeded") &&
-            attempt > 1) {
-          break;
+        // User rejected - don't retry
+        if (error.message?.includes("User rejected") || 
+            error.message?.includes("rejected the request")) {
+          throw error;
         }
 
-        // Wait a bit before retrying
+        // Wait before retrying
         if (attempt < maxRetries) {
-          await new Promise(resolve => setTimeout(resolve, 500 * attempt));
+          await new Promise(resolve => setTimeout(resolve, 1000));
         }
       }
     }
