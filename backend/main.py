@@ -243,7 +243,7 @@ app.add_middleware(
 )
 
 # ─── Register Routers ───────────────────────────────────────────────────────
-from backend.routers import anonymize, trials, match, parse, ingest, patients
+from backend.routers import anonymize, trials, match, parse, ingest, patients, tee_auth
 
 app.include_router(anonymize.router, tags=["Anonymize"])
 app.include_router(trials.router, tags=["Trials"])
@@ -251,6 +251,7 @@ app.include_router(match.router, tags=["Match"])
 app.include_router(parse.router, tags=["Parse"])
 app.include_router(ingest.router, tags=["Ingest"])
 app.include_router(patients.router, tags=["Patients"])
+app.include_router(tee_auth.router, tags=["TEE Auth"])
 
 
 # ─── Health Check ────────────────────────────────────────────────────────────

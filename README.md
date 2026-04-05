@@ -1,85 +1,229 @@
-# TrialMatch AI - Clinical Trial Eligibility & Matching Engine
+# CogniStream - Privacy-First Clinical Trial Matching on Solana
 
-> Hackathon: Coherence 2026 | Track: Health & Digital Wellbeing
+> **Hackathon**: MagicBlock Solana Blitz v3 (April 3-5, 2026)
+> **Track**: Healthcare + Privacy with Ephemeral Rollups
 
-An AI-powered system that matches patients to clinical trials using NLP, semantic similarity, and fine-tuned LLMs.
+## Overview
 
-## Features
+CogniStream is a privacy-first clinical trial matching platform that leverages **MagicBlock Ephemeral Rollups (ER)** for gasless, sub-50ms on-chain transactions. Patient health data is processed through AI pipelines while consent and matching events are recorded immutably on Solana via delegated accounts.
 
-- **Patient Anonymization** - SciSpacy NER to de-identify PHI
-- **Semantic Trial Matching** - PubMedBERT embeddings + cosine similarity
-- **LLM-based Eligibility Scoring** - Fine-tuned Mistral-7B for criteria evaluation
-- **Rule-based Filters** - Age, gender, location hard constraints
-- **Geo-distance Ranking** - Google Maps API for proximity scoring
-- **Explainable Results** - PASS/FAIL breakdown per criterion
+### Why Ephemeral Rollups?
+
+Healthcare data requires:
+- **Speed**: Real-time patient matching without blockchain latency
+- **Privacy**: TEE-protected transactions for sensitive health data  
+- **Cost**: Gasless operations for patient onboarding
+- **Compliance**: Immutable consent logs for HIPAA/audit trails
+
+MagicBlock ER delivers all four through account delegation to high-performance rollup validators.
+
+## Architecture
+
+```
+                    +------------------+
+                    |   Frontend UI    |
+                    |  (Next.js 15)    |
+                    +--------+---------+
+                             |
+              +--------------+--------------+
+              |                             |
+    +---------v---------+         +---------v---------+
+    |   Backend API     |         |   Solana Program  |
+    |   (FastAPI + ML)  |         |   (Anchor/Rust)   |
+    +-------------------+         +-------------------+
+              |                             |
+    +---------v---------+         +---------v---------+
+    | NER + Embeddings  |         | MagicBlock Router |
+    | Mistral-7B LLM    |         | devnet-router.    |
+    | PubMedBERT        |         | magicblock.app    |
+    +-------------------+         +---------+---------+
+                                            |
+                                  +---------v---------+
+                                  | Ephemeral Rollup  |
+                                  | (Gasless + TEE)   |
+                                  +-------------------+
+```
+
+## MagicBlock ER Integration
+
+### Program ID (Devnet)
+```
+3YUtpqBtoJshnq7zWviWFrdWc82pgiDLM9wjfFujGMEg
+```
+
+### Key Instructions
+
+| Instruction | Purpose | ER Feature |
+|-------------|---------|------------|
+| `initPatient` | Create patient PDA with health hash | L1 anchor |
+| `delegatePatient` | Delegate to ER validator | Gasless mode |
+| `recordMatch` | Log trial match on-chain | Sub-50ms |
+| `logConsent` | HIPAA consent timestamp | Immutable audit |
+| `undelegatePatient` | Return to L1 | Settlement |
+
+### ER Flow
+
+```typescript
+// 1. Initialize patient on L1
+const patientPda = await erClient.initPatient(healthHash);
+
+// 2. Delegate to Ephemeral Rollup (gasless from here)
+await erClient.delegatePatient(patientPda, validatorKey);
+
+// 3. Record matches at 50ms speed (no gas!)
+for (const match of matches) {
+  await erClient.recordMatch(patientPda, match.trialId, match.score);
+}
+
+// 4. Log consent with timestamp
+await erClient.logConsent(patientPda, consentType);
+```
+
+### TEE Privacy Mode
+
+For maximum privacy, toggle TEE mode to route through MagicBlock's Trusted Execution Environment:
+
+```typescript
+const teeConnection = await connectPrivateTee();
+// All transactions encrypted in TEE enclave
+```
+
+## Tech Stack
+
+| Layer | Technology |
+|-------|------------|
+| Frontend | Next.js 15, React 19, TailwindCSS |
+| Wallet | Solana Wallet Adapter, Phantom |
+| Blockchain | Anchor 0.31, Solana 3.1 |
+| ER | MagicBlock Router, Delegation Program |
+| Backend | FastAPI, Python 3.12 |
+| ML/NLP | SciSpacy NER, PubMedBERT, Mistral-7B |
+| Privacy | MagicBlock TEE, SHA-256 hashing |
+
+## Quick Start
+
+### Prerequisites
+- Node.js 20+, pnpm
+- Python 3.12+
+- Solana CLI 3.x
+- Phantom Wallet (Devnet)
+
+### 1. Clone & Install
+
+```bash
+git clone https://github.com/Abhishek222983101/CogniStream-MagicBlock-ER.git
+cd CogniStream-MagicBlock-ER
+
+# Backend
+python -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+
+# Frontend
+cd frontend
+pnpm install
+```
+
+### 2. Environment Setup
+
+```bash
+# Backend .env
+MISTRAL_API_KEY=your_key
+GOOGLE_MAPS_API_KEY=your_key
+
+# Frontend .env.local
+NEXT_PUBLIC_SOLANA_NETWORK=devnet
+NEXT_PUBLIC_PROGRAM_ID=3YUtpqBtoJshnq7zWviWFrdWc82pgiDLM9wjfFujGMEg
+```
+
+### 3. Run
+
+```bash
+# Terminal 1 - Backend
+uvicorn backend.main:app --reload --port 8000
+
+# Terminal 2 - Frontend
+cd frontend && pnpm dev
+```
+
+### 4. Test ER Flow
+
+1. Open `http://localhost:3000/pipeline`
+2. Connect Phantom wallet (Devnet)
+3. Load sample patient data
+4. Click "Process" to trigger:
+   - AI analysis (backend)
+   - `initPatient` transaction
+   - `delegatePatient` to ER
+   - `recordMatch` for each trial
+   - `logConsent` for HIPAA
 
 ## Project Structure
 
 ```
-Cogni-Stream/
-├── backend/           # FastAPI backend
-│   ├── main.py        # App entry point
-│   ├── config.py      # Configuration
-│   ├── schemas/       # Pydantic models
-│   ├── engine/        # ML pipelines (NER, embedding, LLM, scorer)
-│   ├── services/      # External APIs (Mistral, Geo)
-│   └── routers/       # API endpoints
-├── scripts/           # Data generation & training
-├── data/              # Trials, patients, training data
-├── models/            # Fine-tuned LoRA adapters (not tracked)
-└── requirements.txt
-```
-
-## Setup
-
-### 1. Create Virtual Environment
-
-```bash
-python -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
-```
-
-### 2. Download SciSpacy Model
-
-```bash
-pip install https://s3-us-west-2.amazonaws.com/ai2-s2-scispacy/releases/v0.5.3/en_core_sci_md-0.5.3.tar.gz
-```
-
-### 3. Environment Variables
-
-Create `.env` file:
-```
-MISTRAL_API_KEY=your_mistral_api_key
-GOOGLE_MAPS_API_KEY=your_google_maps_key
-```
-
-### 4. Run Server
-
-```bash
-# Fast mode (skip local LLM, use API fallback)
-TRIALMATCH_SKIP_LLM=1 uvicorn backend.main:app --reload
-
-# Full mode (requires GPU)
-uvicorn backend.main:app --host 0.0.0.0 --port 8000
+CogniStream-MagicBlock-ER/
+├── programs/cognistream/      # Anchor program
+│   └── src/
+│       ├── lib.rs            # Main program logic
+│       ├── state.rs          # Account structures
+│       ├── constants.rs      # Seeds, validators
+│       └── errors.rs         # Custom errors
+├── frontend/
+│   └── src/
+│       ├── app/pipeline/     # Main ER demo page
+│       ├── components/
+│       │   ├── WalletProvider.tsx  # ER context
+│       │   └── ERStatusIndicator.tsx
+│       └── lib/
+│           ├── er-client.ts  # ER transaction client
+│           ├── pdas.ts       # PDA derivation
+│           ├── tee.ts        # TEE connection
+│           └── program.ts    # Anchor setup
+├── backend/
+│   ├── main.py               # FastAPI app
+│   ├── engine/               # ML pipelines
+│   └── routers/
+│       └── tee_auth.py       # TEE auth endpoints
+└── target/idl/
+    └── cognistream.json      # Program IDL
 ```
 
 ## API Endpoints
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/health` | System status |
-| POST | `/api/anonymize` | De-identify patient record |
-| GET | `/api/trials` | List trials with filters |
-| POST | `/api/match` | Match patient to specific trials |
-| POST | `/api/match-all` | Match patient to ALL trials |
-| POST | `/api/parse-criteria` | Decompose eligibility criteria |
+### Backend (FastAPI)
 
-## Training (Optional)
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/api/health` | GET | System status |
+| `/api/anonymize` | POST | De-identify patient PHI |
+| `/api/match-all` | POST | Match patient to all trials |
+| `/api/tee/status` | GET | TEE connection status |
+| `/api/tee/auth` | POST | Generate TEE auth token |
 
-```bash
-python scripts/finetune.py
-```
+### Solana Program
+
+| Instruction | Accounts | Data |
+|-------------|----------|------|
+| `initPatient` | patient, payer, system | health_hash |
+| `delegatePatient` | patient, delegation_program | validator |
+| `recordMatch` | patient, authority | trial_id, score |
+| `logConsent` | patient, authority | consent_type |
+
+## Hackathon Deliverables
+
+- [x] Anchor program deployed to Devnet
+- [x] Frontend with wallet integration
+- [x] ER delegation working (gasless)
+- [x] TEE privacy toggle
+- [x] Backend ML pipeline
+- [x] Documentation
+
+## Team
+
+**Abhishek Tiwari**
+- Email: abhishekrahul1445@gmail.com
+- Telegram: @Abhisheksoni1445
+- Twitter: @Abhishekislinux
 
 ## License
 

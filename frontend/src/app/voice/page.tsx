@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -11,19 +11,16 @@ import {
   VolumeX,
   Loader2,
   Sparkles,
-  Activity,
   Brain,
   Waves,
-  CircleDot,
   MessageSquare,
   FlaskConical,
   Users,
-  MapPin,
-  Zap,
-  Settings,
   Info,
+  Send,
+  Keyboard,
+  X,
 } from "lucide-react";
-import { useSpeechRecognition } from "@/hooks/useSpeechRecognition";
 
 interface ConversationItem {
   id: string;
@@ -61,10 +58,12 @@ const VoiceWaveform = ({ isActive, intensity = 1 }: { isActive: boolean; intensi
 // Pulsing orb component
 const VoiceOrb = ({ 
   state, 
-  onClick 
+  onClick,
+  disabled
 }: { 
   state: "idle" | "listening" | "thinking" | "speaking";
   onClick: () => void;
+  disabled?: boolean;
 }) => {
   const stateColors = {
     idle: "from-charcoal/80 to-charcoal",
@@ -82,18 +81,20 @@ const VoiceOrb = ({
 
   const stateLabels = {
     idle: "Tap to speak",
-    listening: "Listening...",
+    listening: "Listening... (tap to stop)",
     thinking: "Processing...",
-    speaking: "Speaking...",
+    speaking: "Speaking... (tap to stop)",
   };
 
   return (
     <div className="flex flex-col items-center gap-4">
       <motion.button
         onClick={onClick}
-        className={`relative w-32 h-32 rounded-full bg-gradient-to-br ${stateColors[state]} 
+        disabled={disabled || state === "thinking"}
+        className={`relative w-28 h-28 rounded-full bg-gradient-to-br ${stateColors[state]} 
                    flex items-center justify-center shadow-2xl border-4 border-white/20
-                   hover:scale-105 active:scale-95 transition-transform cursor-pointer`}
+                   hover:scale-105 active:scale-95 transition-transform cursor-pointer
+                   disabled:opacity-50 disabled:cursor-not-allowed`}
         whileTap={{ scale: 0.95 }}
         animate={state !== "idle" ? {
           boxShadow: [
@@ -107,7 +108,6 @@ const VoiceOrb = ({
           repeat: state !== "idle" ? Infinity : 0,
         }}
       >
-        {/* Outer ring animations */}
         {state === "listening" && (
           <>
             <motion.div
@@ -124,20 +124,18 @@ const VoiceOrb = ({
         )}
         
         {state === "speaking" && (
-          <>
-            <motion.div
-              className="absolute inset-0 rounded-full border-4 border-surgical/50"
-              animate={{ scale: [1, 1.2, 1], opacity: [0.5, 0, 0.5] }}
-              transition={{ duration: 0.8, repeat: Infinity }}
-            />
-          </>
+          <motion.div
+            className="absolute inset-0 rounded-full border-4 border-surgical/50"
+            animate={{ scale: [1, 1.2, 1], opacity: [0.5, 0, 0.5] }}
+            transition={{ duration: 0.8, repeat: Infinity }}
+          />
         )}
 
         {stateIcons[state]}
       </motion.button>
       
       <motion.p 
-        className="font-mono text-sm text-charcoal/70 uppercase tracking-widest"
+        className="font-mono text-xs text-charcoal/70 uppercase tracking-widest text-center"
         animate={{ opacity: [0.7, 1, 0.7] }}
         transition={{ duration: 2, repeat: Infinity }}
       >
@@ -198,38 +196,18 @@ export default function VoiceAssistantPage() {
   const [voiceState, setVoiceState] = useState<"idle" | "listening" | "thinking" | "speaking">("idle");
   const [conversation, setConversation] = useState<ConversationItem[]>([]);
   const [currentTranscript, setCurrentTranscript] = useState("");
+  const [interimTranscript, setInterimTranscript] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isMuted, setIsMuted] = useState(false);
   const [apiReady, setApiReady] = useState(false);
+  const [textInput, setTextInput] = useState("");
+  const [inputMode, setInputMode] = useState<"voice" | "text">("voice");
+  const [isVoiceSupported, setIsVoiceSupported] = useState(true);
   
   const conversationEndRef = useRef<HTMLDivElement>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
-
-  // Initialize speech recognition
-  const {
-    isListening,
-    transcript,
-    interimTranscript,
-    startListening,
-    stopListening,
-    resetTranscript,
-    isSupported,
-    error: speechError,
-  } = useSpeechRecognition({
-    continuous: true,
-    interimResults: true,
-    lang: "en-IN",
-    onResult: (text, isFinal) => {
-      if (isFinal) {
-        setCurrentTranscript(prev => prev + " " + text);
-      }
-    },
-    onEnd: () => {
-      if (currentTranscript.trim()) {
-        processVoiceInput(currentTranscript.trim());
-      }
-    },
-  });
+  const recognitionRef = useRef<any>(null);
+  const textInputRef = useRef<HTMLTextAreaElement>(null);
 
   // Check API status on mount
   useEffect(() => {
@@ -239,30 +217,147 @@ export default function VoiceAssistantPage() {
         setApiReady(data.status === "ready");
       })
       .catch(() => setApiReady(false));
-  }, []);
 
-  // Update voice state based on listening status
-  useEffect(() => {
-    if (isListening) {
-      setVoiceState("listening");
+    // Check if speech recognition is supported
+    if (typeof window !== "undefined") {
+      const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+      setIsVoiceSupported(!!SpeechRecognition);
     }
-  }, [isListening]);
+  }, []);
 
   // Scroll to bottom of conversation
   useEffect(() => {
     conversationEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [conversation]);
 
-  // Handle speech errors
-  useEffect(() => {
-    if (speechError) {
-      setError(speechError);
+  // Initialize speech recognition
+  const startListening = () => {
+    if (typeof window === "undefined") return;
+    
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      setError("Speech recognition is not supported in your browser. Please use text input instead.");
+      setInputMode("text");
+      return;
+    }
+
+    try {
+      // Clean up any existing recognition
+      if (recognitionRef.current) {
+        recognitionRef.current.abort();
+      }
+
+      const recognition = new SpeechRecognition();
+      recognition.continuous = false; // Single utterance mode - more stable
+      recognition.interimResults = true;
+      recognition.lang = "en-IN";
+      recognition.maxAlternatives = 1;
+
+      recognition.onstart = () => {
+        setVoiceState("listening");
+        setError(null);
+        setCurrentTranscript("");
+        setInterimTranscript("");
+      };
+
+      recognition.onresult = (event: any) => {
+        let finalText = "";
+        let interimText = "";
+
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          const result = event.results[i];
+          if (result.isFinal) {
+            finalText += result[0].transcript;
+          } else {
+            interimText += result[0].transcript;
+          }
+        }
+
+        if (finalText) {
+          setCurrentTranscript(prev => prev + " " + finalText);
+        }
+        setInterimTranscript(interimText);
+      };
+
+      recognition.onend = () => {
+        // Get the current transcript value at the time of onend
+        setCurrentTranscript(prev => {
+          const finalText = prev.trim();
+          if (finalText) {
+            // Process the input after a brief delay to ensure state is updated
+            setTimeout(() => {
+              processInput(finalText);
+            }, 100);
+          } else {
+            setVoiceState("idle");
+          }
+          return "";
+        });
+        setInterimTranscript("");
+      };
+
+      recognition.onerror = (event: any) => {
+        console.log("Speech recognition error:", event.error);
+        
+        // Don't show error for aborted or no-speech - these are normal
+        if (event.error === "aborted" || event.error === "no-speech") {
+          setVoiceState("idle");
+          return;
+        }
+
+        // For network errors, try to process any captured text first
+        if (event.error === "network") {
+          setCurrentTranscript(prev => {
+            const text = prev.trim() || interimTranscript.trim();
+            if (text) {
+              setTimeout(() => processInput(text), 100);
+              return "";
+            }
+            setError("Voice recognition had a network issue. Try using text input instead.");
+            setInputMode("text");
+            return "";
+          });
+          setVoiceState("idle");
+          return;
+        }
+
+        // Other errors
+        const errorMessages: Record<string, string> = {
+          "not-allowed": "Microphone access denied. Please allow microphone access or use text input.",
+          "audio-capture": "No microphone found. Please use text input instead.",
+          "service-not-allowed": "Speech service not available. Please use text input.",
+        };
+        
+        setError(errorMessages[event.error] || `Speech error: ${event.error}. Try text input.`);
+        setVoiceState("idle");
+        setInputMode("text");
+      };
+
+      recognitionRef.current = recognition;
+      recognition.start();
+    } catch (err) {
+      console.error("Failed to start speech recognition:", err);
+      setError("Failed to start voice input. Please use text input instead.");
+      setInputMode("text");
       setVoiceState("idle");
     }
-  }, [speechError]);
+  };
 
-  const processVoiceInput = async (text: string) => {
-    if (!text.trim()) return;
+  const stopListening = () => {
+    if (recognitionRef.current) {
+      try {
+        recognitionRef.current.stop();
+      } catch (e) {
+        // Ignore errors when stopping
+      }
+    }
+  };
+
+  const processInput = async (text: string) => {
+    if (!text.trim()) {
+      setVoiceState("idle");
+      return;
+    }
 
     // Add user message to conversation
     const userMessage: ConversationItem = {
@@ -272,9 +367,8 @@ export default function VoiceAssistantPage() {
       timestamp: new Date(),
     };
     setConversation((prev) => [...prev, userMessage]);
-    setCurrentTranscript("");
-    resetTranscript();
     setVoiceState("thinking");
+    setTextInput("");
 
     try {
       const response = await fetch("/api/voice", {
@@ -286,7 +380,10 @@ export default function VoiceAssistantPage() {
         }),
       });
 
-      if (!response.ok) throw new Error("Failed to get response");
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || "Failed to get response");
+      }
 
       const data = await response.json();
 
@@ -303,47 +400,60 @@ export default function VoiceAssistantPage() {
       // Play audio if available and not muted
       if (data.audio && !isMuted) {
         setVoiceState("speaking");
-        const audioBlob = new Blob(
-          [Uint8Array.from(atob(data.audio), (c) => c.charCodeAt(0))],
-          { type: "audio/mpeg" }
-        );
-        const audioUrl = URL.createObjectURL(audioBlob);
-        
-        if (audioRef.current) {
-          audioRef.current.pause();
+        try {
+          const audioBlob = new Blob(
+            [Uint8Array.from(atob(data.audio), (c) => c.charCodeAt(0))],
+            { type: "audio/mpeg" }
+          );
+          const audioUrl = URL.createObjectURL(audioBlob);
+          
+          if (audioRef.current) {
+            audioRef.current.pause();
+          }
+          
+          audioRef.current = new Audio(audioUrl);
+          audioRef.current.onended = () => {
+            setVoiceState("idle");
+            URL.revokeObjectURL(audioUrl);
+          };
+          audioRef.current.onerror = () => {
+            // Fallback to browser TTS
+            speakWithBrowserTTS(data.response);
+            URL.revokeObjectURL(audioUrl);
+          };
+          await audioRef.current.play();
+        } catch (audioErr) {
+          speakWithBrowserTTS(data.response);
         }
-        
-        audioRef.current = new Audio(audioUrl);
-        audioRef.current.onended = () => {
-          setVoiceState("idle");
-          URL.revokeObjectURL(audioUrl);
-        };
-        audioRef.current.onerror = () => {
-          setVoiceState("idle");
-          URL.revokeObjectURL(audioUrl);
-        };
-        audioRef.current.play().catch(() => setVoiceState("idle"));
       } else if (!isMuted) {
-        // Fallback to browser TTS
-        setVoiceState("speaking");
-        const utterance = new SpeechSynthesisUtterance(data.response);
-        utterance.rate = 0.9;
-        utterance.onend = () => setVoiceState("idle");
-        utterance.onerror = () => setVoiceState("idle");
-        window.speechSynthesis.speak(utterance);
+        speakWithBrowserTTS(data.response);
       } else {
         setVoiceState("idle");
       }
-    } catch (err) {
-      setError("Failed to process your request. Please try again.");
+    } catch (err: any) {
+      console.error("Process input error:", err);
+      setError(err.message || "Failed to process your request. Please try again.");
       setVoiceState("idle");
     }
+  };
+
+  const speakWithBrowserTTS = (text: string) => {
+    if (typeof window === "undefined" || !window.speechSynthesis) {
+      setVoiceState("idle");
+      return;
+    }
+
+    setVoiceState("speaking");
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.rate = 0.9;
+    utterance.onend = () => setVoiceState("idle");
+    utterance.onerror = () => setVoiceState("idle");
+    window.speechSynthesis.speak(utterance);
   };
 
   const handleOrbClick = () => {
     if (voiceState === "idle") {
       setError(null);
-      setCurrentTranscript("");
       startListening();
     } else if (voiceState === "listening") {
       stopListening();
@@ -353,8 +463,24 @@ export default function VoiceAssistantPage() {
         audioRef.current.pause();
         audioRef.current = null;
       }
-      window.speechSynthesis.cancel();
+      if (typeof window !== "undefined" && window.speechSynthesis) {
+        window.speechSynthesis.cancel();
+      }
       setVoiceState("idle");
+    }
+  };
+
+  const handleTextSubmit = (e?: React.FormEvent) => {
+    e?.preventDefault();
+    if (textInput.trim() && voiceState === "idle") {
+      processInput(textInput.trim());
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      handleTextSubmit();
     }
   };
 
@@ -390,6 +516,7 @@ export default function VoiceAssistantPage() {
                 ? "border-iodine/30 bg-iodine/10 text-iodine" 
                 : "border-charcoal/10 bg-white text-charcoal hover:bg-paper"
             }`}
+            title={isMuted ? "Unmute" : "Mute"}
           >
             {isMuted ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
           </button>
@@ -409,22 +536,21 @@ export default function VoiceAssistantPage() {
       <main className="flex-1 flex flex-col max-w-4xl mx-auto w-full px-4 py-6">
         
         {/* Conversation Area */}
-        <div className="flex-1 overflow-y-auto mb-6 space-y-4 min-h-[200px]">
+        <div className="flex-1 overflow-y-auto mb-4 space-y-4 min-h-[150px]">
           {conversation.length === 0 ? (
             <motion.div 
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className="text-center py-12"
+              className="text-center py-8"
             >
-              <div className="w-20 h-20 mx-auto mb-6 bg-gradient-to-br from-cobalt/10 to-surgical/10 rounded-full flex items-center justify-center">
-                <Sparkles className="w-10 h-10 text-cobalt" strokeWidth={1.5} />
+              <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-cobalt/10 to-surgical/10 rounded-full flex items-center justify-center">
+                <Sparkles className="w-8 h-8 text-cobalt" strokeWidth={1.5} />
               </div>
-              <h2 className="font-heading text-xl font-bold text-charcoal mb-2">
+              <h2 className="font-heading text-lg font-bold text-charcoal mb-2">
                 Voice-Powered Trial Matching
               </h2>
-              <p className="font-mono text-sm text-charcoal/60 max-w-md mx-auto mb-8">
-                Speak naturally about your medical condition or trial requirements. 
-                I'll find the best matching clinical trials in India for you.
+              <p className="font-mono text-sm text-charcoal/60 max-w-md mx-auto mb-6">
+                Speak or type your query to find clinical trials in India.
               </p>
               
               {/* Suggested queries */}
@@ -432,9 +558,11 @@ export default function VoiceAssistantPage() {
                 {suggestedQueries.map((query, i) => (
                   <button
                     key={i}
-                    onClick={() => processVoiceInput(query)}
+                    onClick={() => processInput(query)}
+                    disabled={voiceState !== "idle"}
                     className="text-left px-4 py-3 bg-white border-2 border-charcoal/10 rounded-lg 
-                             hover:border-cobalt/30 hover:bg-cobalt/5 transition-colors group"
+                             hover:border-cobalt/30 hover:bg-cobalt/5 transition-colors group
+                             disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <div className="flex items-start gap-2">
                       <MessageSquare className="w-4 h-4 text-charcoal/30 group-hover:text-cobalt mt-0.5" />
@@ -457,7 +585,7 @@ export default function VoiceAssistantPage() {
         </div>
 
         {/* Voice Waveform / Transcript Display */}
-        <div className="mb-6">
+        <AnimatePresence>
           {(voiceState === "listening" || interimTranscript || currentTranscript) && (
             <motion.div
               initial={{ opacity: 0, height: 0 }}
@@ -478,15 +606,30 @@ export default function VoiceAssistantPage() {
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
               className="bg-surgical/10 border-2 border-surgical/20 rounded-2xl p-4 mb-4"
             >
               <VoiceWaveform isActive={true} intensity={0.7} />
               <p className="font-mono text-xs text-center text-surgical mt-2 uppercase tracking-widest">
-                AI is speaking...
+                AI is speaking... (tap orb to stop)
               </p>
             </motion.div>
           )}
-        </div>
+
+          {voiceState === "thinking" && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="bg-cobalt/10 border-2 border-cobalt/20 rounded-2xl p-4 mb-4 flex items-center justify-center gap-3"
+            >
+              <Loader2 className="w-5 h-5 animate-spin text-cobalt" />
+              <p className="font-mono text-xs text-cobalt uppercase tracking-widest">
+                Processing your request...
+              </p>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Error Display */}
         <AnimatePresence>
@@ -495,48 +638,117 @@ export default function VoiceAssistantPage() {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
-              className="mb-6 p-4 bg-iodine/10 border-2 border-iodine/30 rounded-xl text-center"
+              className="mb-4 p-3 bg-iodine/10 border-2 border-iodine/30 rounded-xl flex items-center justify-between"
             >
-              <p className="font-mono text-sm text-iodine">{error}</p>
+              <p className="font-mono text-xs text-iodine">{error}</p>
               <button
                 onClick={() => setError(null)}
-                className="mt-2 font-mono text-xs text-iodine/70 underline"
+                className="ml-2 p-1 hover:bg-iodine/20 rounded"
               >
-                Dismiss
+                <X className="w-4 h-4 text-iodine" />
               </button>
             </motion.div>
           )}
         </AnimatePresence>
 
-        {/* Browser Support Warning */}
-        {!isSupported && (
-          <div className="mb-6 p-4 bg-amber-50 border-2 border-amber-200 rounded-xl text-center">
-            <p className="font-mono text-sm text-amber-800">
-              Speech recognition is not supported in your browser. 
-              Please use Chrome or Edge for the best experience.
-            </p>
+        {/* Input Mode Toggle */}
+        <div className="flex justify-center mb-4">
+          <div className="inline-flex bg-white border-2 border-charcoal/10 rounded-full p-1">
+            <button
+              onClick={() => setInputMode("voice")}
+              className={`flex items-center gap-2 px-4 py-2 rounded-full text-xs font-mono font-bold uppercase transition-colors ${
+                inputMode === "voice" 
+                  ? "bg-charcoal text-white" 
+                  : "text-charcoal/60 hover:text-charcoal"
+              }`}
+            >
+              <Mic className="w-4 h-4" />
+              Voice
+            </button>
+            <button
+              onClick={() => {
+                setInputMode("text");
+                setTimeout(() => textInputRef.current?.focus(), 100);
+              }}
+              className={`flex items-center gap-2 px-4 py-2 rounded-full text-xs font-mono font-bold uppercase transition-colors ${
+                inputMode === "text" 
+                  ? "bg-charcoal text-white" 
+                  : "text-charcoal/60 hover:text-charcoal"
+              }`}
+            >
+              <Keyboard className="w-4 h-4" />
+              Text
+            </button>
+          </div>
+        </div>
+
+        {/* Voice Input Mode */}
+        {inputMode === "voice" && (
+          <div className="flex flex-col items-center">
+            {!isVoiceSupported && (
+              <div className="mb-4 p-3 bg-amber-50 border-2 border-amber-200 rounded-xl text-center">
+                <p className="font-mono text-xs text-amber-800">
+                  Speech recognition is not supported. Switch to text input.
+                </p>
+              </div>
+            )}
+            <VoiceOrb 
+              state={voiceState} 
+              onClick={handleOrbClick} 
+              disabled={!isVoiceSupported}
+            />
           </div>
         )}
 
-        {/* Voice Orb */}
-        <div className="flex justify-center">
-          <VoiceOrb state={voiceState} onClick={handleOrbClick} />
-        </div>
+        {/* Text Input Mode */}
+        {inputMode === "text" && (
+          <form onSubmit={handleTextSubmit} className="w-full">
+            <div className="flex gap-2">
+              <textarea
+                ref={textInputRef}
+                value={textInput}
+                onChange={(e) => setTextInput(e.target.value)}
+                onKeyDown={handleKeyDown}
+                placeholder="Type your question about clinical trials..."
+                className="flex-1 bg-white border-2 border-charcoal/20 rounded-xl px-4 py-3 font-mono text-sm 
+                         focus:outline-none focus:border-cobalt resize-none min-h-[50px]"
+                rows={2}
+                disabled={voiceState !== "idle"}
+              />
+              <button
+                type="submit"
+                disabled={!textInput.trim() || voiceState !== "idle"}
+                className="bg-charcoal text-white px-6 rounded-xl border-2 border-charcoal 
+                         hover:bg-cobalt hover:border-cobalt disabled:opacity-50 disabled:cursor-not-allowed 
+                         flex items-center justify-center transition-colors"
+              >
+                {voiceState === "thinking" ? (
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                ) : (
+                  <Send className="w-5 h-5" />
+                )}
+              </button>
+            </div>
+            <p className="font-mono text-[10px] text-charcoal/40 mt-2 text-center">
+              Press Enter to send, Shift+Enter for new line
+            </p>
+          </form>
+        )}
 
         {/* Feature Pills */}
-        <div className="flex justify-center gap-3 mt-8 flex-wrap">
+        <div className="flex justify-center gap-2 mt-6 flex-wrap">
           {[
             { icon: <Mic className="w-3 h-3" />, label: "Voice Input" },
-            { icon: <Brain className="w-3 h-3" />, label: "Gemini AI" },
-            { icon: <Volume2 className="w-3 h-3" />, label: "ElevenLabs TTS" },
-            { icon: <FlaskConical className="w-3 h-3" />, label: "30+ Indian Trials" },
+            { icon: <Keyboard className="w-3 h-3" />, label: "Text Input" },
+            { icon: <Brain className="w-3 h-3" />, label: "AI Powered" },
+            { icon: <Volume2 className="w-3 h-3" />, label: "Voice Response" },
           ].map((feature, i) => (
             <div
               key={i}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-charcoal/10 rounded-full"
+              className="flex items-center gap-1.5 px-2 py-1 bg-white border border-charcoal/10 rounded-full"
             >
               <span className="text-charcoal/50">{feature.icon}</span>
-              <span className="font-mono text-[10px] text-charcoal/70 uppercase tracking-wider">
+              <span className="font-mono text-[9px] text-charcoal/70 uppercase tracking-wider">
                 {feature.label}
               </span>
             </div>
@@ -548,7 +760,7 @@ export default function VoiceAssistantPage() {
       <footer className="bg-white/50 border-t border-charcoal/10 px-4 py-3 text-center">
         <p className="font-mono text-[10px] text-charcoal/40 flex items-center justify-center gap-2">
           <Info className="w-3 h-3" />
-          Designed for accessibility - perfect for elderly or visually impaired users
+          Designed for accessibility - use voice or text input
         </p>
       </footer>
     </div>

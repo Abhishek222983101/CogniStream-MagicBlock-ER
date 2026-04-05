@@ -15,3 +15,11 @@ frontend/.next/
 frontend/.env.local
 frontend/out/
 frontend/.vercel/
+
+# Anchor/Solana build artifacts (exclude everything except idl and types)
+target/debug/
+target/release/
+target/deploy/
+target/sbpf-solana-solana/
+target/.rustc_info.json
+*.so

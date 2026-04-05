@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef, useEffect, useCallback } from "react";
+import React, { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import Link from "next/link";
 import {
   ArrowLeft,
@@ -25,9 +25,12 @@ import {
   Zap,
   FileUp,
   ExternalLink,
+  Lock,
+  Unlock,
+  Activity,
 } from "lucide-react";
 
-import dynamic from 'next/dynamic';
+import dynamic from "next/dynamic";
 
 // Solana Web3 imports
 import { useWallet, useConnection } from "@solana/wallet-adapter-react";
@@ -35,7 +38,20 @@ const WalletMultiButton = dynamic(
   () => import("@solana/wallet-adapter-react-ui").then((mod) => mod.WalletMultiButton),
   { ssr: false }
 );
-import { createMemoTransaction, getSolscanUrl, formatSignature, AuditLogData } from "@/lib/solana";
+
+// ER Integration imports
+import { useER } from "@/components/WalletProvider";
+import { createERClient, ERClient, TransactionResult } from "@/lib/er-client";
+import { derivePatientPda } from "@/lib/pdas";
+import { hashPatientData, hashMatchResult } from "@/lib/hash";
+import { txUrl, truncateSignature, truncateAddress } from "@/lib/explorer";
+import { formatDuration, percentToBps } from "@/lib/format";
+import {
+  ERStatusBadge,
+  TxTimingDisplay,
+  OnChainStatus,
+  PrivacyModeToggle,
+} from "@/components/ERStatusIndicator";
 import {
   anonymizePatient,
   matchAll,
@@ -50,6 +66,21 @@ import {
 import { DigitalIndiaPopup } from "@/components/ui/animated-tooltip";
 
 type PipelineStep = "upload" | "extract" | "anonymize" | "processing" | "complete";
+
+// ─── ER Transaction State ─────────────────────────────────────────────────────
+interface ERTransactionState {
+  initPatient: TransactionResult | null;
+  delegatePatient: TransactionResult | null;
+  recordMatch: TransactionResult | null;
+  logConsent: TransactionResult | null;
+}
+
+const initialERState: ERTransactionState = {
+  initPatient: null,
+  delegatePatient: null,
+  recordMatch: null,
+  logConsent: null,
+};
 type InputMode = "file" | "paste" | "sample";
 type InputTab = "upload" | "paste" | "sample";
 
@@ -166,9 +197,41 @@ export default function PipelinePage() {
   const [solanaLoading, setSolanaLoading] = useState(false);
   const [solanaError, setSolanaError] = useState<string | null>(null);
 
+  // ─── Ephemeral Rollups State ─────────────────────────────────────────────────
+  const [erState, setERState] = useState<ERTransactionState>(initialERState);
+  const [erClient, setERClient] = useState<ERClient | null>(null);
+  const [patientPda, setPatientPda] = useState<string | null>(null);
+  const [useTee, setUseTee] = useState(false);
+  const [erLoading, setERLoading] = useState(false);
+
   // Solana wallet hooks
-  const { publicKey, sendTransaction, connected } = useWallet();
+  const { publicKey, sendTransaction, connected, signTransaction, signAllTransactions } = useWallet();
   const { connection } = useConnection();
+  
+  // ER Context
+  const { 
+    isDelegated, 
+    setIsDelegated, 
+    mode, 
+    setMode, 
+    incrementTxCount, 
+    setLastTxTime,
+    isTeeMode 
+  } = useER();
+
+  // Initialize ER Client when wallet connects
+  useEffect(() => {
+    if (publicKey && connected && signTransaction && signAllTransactions) {
+      const client = createERClient(connection, {
+        publicKey,
+        signTransaction: signTransaction as any,
+        signAllTransactions: signAllTransactions as any,
+      });
+      setERClient(client);
+    } else {
+      setERClient(null);
+    }
+  }, [publicKey, connected, signTransaction, signAllTransactions, connection]);
 
   const terminalRef = useRef<HTMLDivElement>(null);
 
@@ -334,50 +397,250 @@ export default function PipelinePage() {
     }
   }, [patientData]);
 
-  // ─── Solana Audit Log (Web3 Verification) ────────────────────────────────────
-  const logToSolana = useCallback(async (
+  // ─── Ephemeral Rollups Flow ─────────────────────────────────────────────────
+  
+  /**
+   * Step 1: Initialize patient on L1 (creates PatientRecord PDA)
+   */
+  const initPatientOnChain = useCallback(async (
+    patientId: string,
+    patientDataForHash: Record<string, unknown>
+  ) => {
+    if (!erClient || !publicKey) {
+      addLog("ER: Wallet not connected", "warning");
+      return null;
+    }
+
+    addLog("ER: Initializing patient on Solana L1...", "info");
+    
+    try {
+      const dataHash = await hashPatientData(patientDataForHash);
+      const result = await erClient.initPatient({
+        patientId,
+        dataHash,
+      });
+
+      if (result.success && result.signature) {
+        addLog(`ER: Patient initialized! Tx: ${truncateSignature(result.signature)}`, "success");
+        addLog(`ER: Timing: ${result.timing?.durationMs}ms`, "info");
+        
+        // Set PDA
+        const [pda] = derivePatientPda(publicKey, patientId);
+        setPatientPda(pda.toBase58());
+        
+        setERState(prev => ({ ...prev, initPatient: result }));
+        incrementTxCount();
+        if (result.timing) setLastTxTime(result.timing.durationMs);
+        
+        return result;
+      } else {
+        addLog(`ER: Init failed - ${result.error}`, "error");
+        return null;
+      }
+    } catch (err) {
+      addLog(`ER: Init error - ${err instanceof Error ? err.message : "Unknown"}`, "error");
+      return null;
+    }
+  }, [erClient, publicKey, addLog, incrementTxCount, setLastTxTime]);
+
+  /**
+   * Step 2: Delegate patient to Ephemeral Rollup (GASLESS after this!)
+   */
+  const delegatePatientToER = useCallback(async (patientId: string) => {
+    if (!erClient) {
+      addLog("ER: Client not initialized", "warning");
+      return null;
+    }
+
+    addLog(`ER: Delegating to ${useTee ? "TEE (Private)" : "Ephemeral Rollup"}...`, "info");
+    
+    try {
+      const result = await erClient.delegatePatient({
+        patientId,
+        useTee,
+      });
+
+      if (result.success && result.signature) {
+        addLog(`ER: Delegated! Tx: ${truncateSignature(result.signature)}`, "success");
+        addLog(`ER: Timing: ${result.timing?.durationMs}ms - NOW GASLESS!`, "success");
+        
+        setIsDelegated(true);
+        if (useTee) setMode("tee");
+        else setMode("er");
+        
+        setERState(prev => ({ ...prev, delegatePatient: result }));
+        incrementTxCount();
+        if (result.timing) setLastTxTime(result.timing.durationMs);
+        
+        return result;
+      } else {
+        addLog(`ER: Delegation failed - ${result.error}`, "error");
+        return null;
+      }
+    } catch (err) {
+      addLog(`ER: Delegation error - ${err instanceof Error ? err.message : "Unknown"}`, "error");
+      return null;
+    }
+  }, [erClient, useTee, addLog, setIsDelegated, setMode, incrementTxCount, setLastTxTime]);
+
+  /**
+   * Step 3: Record match result (GASLESS on ER!)
+   */
+  const recordMatchOnChain = useCallback(async (
     patientId: string,
     trialId: string,
-    score: number
+    score: number,
+    matchData: Record<string, unknown>
   ) => {
-    if (!publicKey || !connected) {
+    if (!erClient) {
+      addLog("ER: Client not initialized", "warning");
+      return null;
+    }
+
+    addLog(`ER: Recording match ${trialId} (GASLESS)...`, "info");
+    
+    try {
+      const resultHash = await hashMatchResult({
+        patient_id: patientId,
+        trial_id: trialId,
+        composite_score: score,
+        score_breakdown: matchData.score_breakdown as Record<string, number> || {},
+        criteria_results: matchData.criteria_results as unknown[] || [],
+      });
+
+      const result = await erClient.recordMatch(
+        {
+          patientId,
+          trialId,
+          resultHash,
+          scoreBps: percentToBps(score),
+        },
+        isDelegated
+      );
+
+      if (result.success && result.signature) {
+        addLog(`ER: Match recorded! Tx: ${truncateSignature(result.signature)} (${result.timing?.durationMs}ms)`, "success");
+        
+        setERState(prev => ({ ...prev, recordMatch: result }));
+        setSolanaTxSignature(result.signature);
+        incrementTxCount();
+        if (result.timing) setLastTxTime(result.timing.durationMs);
+        
+        return result;
+      } else {
+        addLog(`ER: Record match failed - ${result.error}`, "error");
+        return null;
+      }
+    } catch (err) {
+      addLog(`ER: Record match error - ${err instanceof Error ? err.message : "Unknown"}`, "error");
+      return null;
+    }
+  }, [erClient, isDelegated, addLog, incrementTxCount, setLastTxTime]);
+
+  /**
+   * Step 4: Log consent (GASLESS on ER!)
+   */
+  const logConsentOnChain = useCallback(async (
+    patientId: string,
+    trialId: string,
+    consentType: number = 0
+  ) => {
+    if (!erClient) {
+      addLog("ER: Client not initialized", "warning");
+      return null;
+    }
+
+    addLog(`ER: Logging consent for ${trialId} (GASLESS)...`, "info");
+    
+    try {
+      const result = await erClient.logConsent(
+        {
+          patientId,
+          trialId,
+          consentType,
+        },
+        isDelegated
+      );
+
+      if (result.success && result.signature) {
+        addLog(`ER: Consent logged! Tx: ${truncateSignature(result.signature)} (${result.timing?.durationMs}ms)`, "success");
+        
+        setERState(prev => ({ ...prev, logConsent: result }));
+        incrementTxCount();
+        if (result.timing) setLastTxTime(result.timing.durationMs);
+        
+        return result;
+      } else {
+        addLog(`ER: Log consent failed - ${result.error}`, "error");
+        return null;
+      }
+    } catch (err) {
+      addLog(`ER: Log consent error - ${err instanceof Error ? err.message : "Unknown"}`, "error");
+      return null;
+    }
+  }, [erClient, isDelegated, addLog, incrementTxCount, setLastTxTime]);
+
+  /**
+   * Full ER Pipeline: initPatient → delegatePatient → recordMatch → logConsent
+   */
+  const runERPipeline = useCallback(async (
+    patientId: string,
+    patientDataForHash: Record<string, unknown>,
+    topMatch: { trial_id: string; composite_score: number; score_breakdown?: unknown; criteria_results?: unknown[] }
+  ) => {
+    if (!erClient || !publicKey || !connected) {
       setSolanaError("Wallet not connected");
       return;
     }
 
+    setERLoading(true);
     setSolanaLoading(true);
     setSolanaError(null);
 
     try {
-      const auditData: AuditLogData = {
-        event: "CogniStream Match",
-        patient_id: patientId,
-        top_trial: trialId,
-        score: Math.round(score),
-        timestamp: Date.now(),
-      };
+      // Step 1: Initialize patient on L1
+      const initResult = await initPatientOnChain(patientId, patientDataForHash);
+      if (!initResult?.success) {
+        // Patient might already exist - try to continue
+        addLog("ER: Patient may already exist, continuing...", "warning");
+      }
 
-      const transaction = createMemoTransaction(auditData, publicKey);
+      // Step 2: Delegate to ER (enables gasless transactions)
+      const delegateResult = await delegatePatientToER(patientId);
+      if (!delegateResult?.success) {
+        // Delegation failed but we can still try to record on L1
+        addLog("ER: Delegation failed, falling back to L1...", "warning");
+      }
 
-      // Get the latest blockhash
-      const { blockhash } = await connection.getLatestBlockhash();
-      transaction.recentBlockhash = blockhash;
-      transaction.feePayer = publicKey;
+      // Step 3: Record match result (GASLESS if delegated!)
+      const matchResult = await recordMatchOnChain(
+        patientId,
+        topMatch.trial_id,
+        topMatch.composite_score,
+        {
+          score_breakdown: (topMatch.score_breakdown as Record<string, number>) || {},
+          criteria_results: topMatch.criteria_results || [],
+        }
+      );
 
-      // Send transaction - this triggers the Phantom popup!
-      const signature = await sendTransaction(transaction, connection);
+      // Step 4: Log consent (GASLESS if delegated!)
+      if (matchResult?.success) {
+        await logConsentOnChain(patientId, topMatch.trial_id, 0);
+      }
 
-      // Wait for confirmation
-      await connection.confirmTransaction(signature, "confirmed");
-
-      setSolanaTxSignature(signature);
+      setERLoading(false);
       setSolanaLoading(false);
     } catch (err) {
-      console.error("Solana transaction failed:", err);
-      setSolanaError(err instanceof Error ? err.message : "Transaction failed");
+      console.error("ER pipeline error:", err);
+      setSolanaError(err instanceof Error ? err.message : "ER pipeline failed");
+      setERLoading(false);
       setSolanaLoading(false);
     }
-  }, [publicKey, connected, connection, sendTransaction]);
+  }, [
+    erClient, publicKey, connected,
+    initPatientOnChain, delegatePatientToER, recordMatchOnChain, logConsentOnChain,
+    addLog
+  ]);
 
   // ─── Step → Anonymize ─────────────────────────────────────────────────────
   const startAnonymization = useCallback(async () => {
@@ -407,9 +670,22 @@ export default function PipelinePage() {
     setCurrentStep("processing");
     setIsProcessing(true);
     setProcessingLogs([]);
+    
+    // Reset ER state for new run
+    setERState(initialERState);
+    setPatientPda(null);
 
     addLog("Initializing CogniStream TrialMatch Engine...", "info");
     addLog(`Patient: ${patientId}`, "info");
+    
+    // Show ER status if wallet connected
+    if (connected && publicKey) {
+      addLog(`ER: Wallet connected - ${truncateAddress(publicKey.toBase58())}`, "info");
+      addLog(`ER: Mode - ${useTee ? "TEE (Private)" : "Standard Ephemeral Rollup"}`, "info");
+    } else {
+      addLog("ER: No wallet connected - Web3 features disabled", "warning");
+    }
+    
     addLog("Loading anonymized record...", "info");
 
     await new Promise((r) => setTimeout(r, 600));
@@ -457,25 +733,36 @@ export default function PipelinePage() {
 
       setMatchResult(data);
 
-      // ─── Solana Web3 Audit Trail ─────────────────────────────────────────────
-      // Automatically trigger Phantom popup to sign the audit log transaction
-      if (connected && publicKey && data.matches[0]) {
-        addLog("Web3: Initiating Solana audit trail...", "info");
+      // ─── MagicBlock Ephemeral Rollups Integration ─────────────────────────────
+      // Run full ER pipeline: initPatient → delegatePatient → recordMatch → logConsent
+      if (connected && publicKey && erClient && data.matches[0]) {
+        addLog("", "info");
+        addLog("═══════════════════════════════════════════════════════════", "info");
+        addLog("ER: Starting MagicBlock Ephemeral Rollups Integration...", "info");
+        addLog("═══════════════════════════════════════════════════════════", "info");
+        
         const topMatch = data.matches[0];
-        // Fire the Solana transaction (non-blocking - don't await here to keep UI responsive)
-        logToSolana(patientId, topMatch.trial_id, topMatch.composite_score)
-          .then(() => {
-            // Note: success/error is handled via state in the logToSolana function
-          })
-          .catch((err) => {
-            console.error("Solana logging error:", err);
-          });
+        
+        // Run the ER pipeline asynchronously
+        runERPipeline(
+          patientId,
+          dataToMatch,
+          {
+            trial_id: topMatch.trial_id,
+            composite_score: topMatch.composite_score,
+            score_breakdown: topMatch.score_breakdown,
+            criteria_results: topMatch.criteria_results,
+          }
+        ).catch((err) => {
+          console.error("ER pipeline error:", err);
+          addLog(`ER: Pipeline error - ${err instanceof Error ? err.message : "Unknown"}`, "error");
+        });
       }
     }
 
     setIsProcessing(false);
     setTimeout(() => setCurrentStep("complete"), 800);
-  }, [patientData, addLog, connected, publicKey, logToSolana]);
+  }, [patientData, addLog, connected, publicKey, erClient, useTee, runERPipeline]);
 
   const getLogColor = (type: ProcessingLog["type"]) => {
     switch (type) {
@@ -572,6 +859,34 @@ export default function PipelinePage() {
         </div>
 
         <div className="flex items-center gap-3">
+          {/* ER Status Badge */}
+          {connected && (
+            <div className={`flex items-center gap-2 px-3 py-1.5 border-2 ${
+              isDelegated 
+                ? "border-[#14F195] bg-[#14F195]/20" 
+                : "border-[#9945FF]/50 bg-[#9945FF]/10"
+            }`}>
+              {isDelegated ? (
+                <>
+                  <Zap className="w-4 h-4 text-[#14F195]" />
+                  <span className="font-mono text-[10px] font-bold uppercase text-[#14F195]">
+                    ER Active
+                  </span>
+                </>
+              ) : (
+                <>
+                  <Activity className="w-4 h-4 text-[#9945FF]" />
+                  <span className="font-mono text-[10px] font-bold uppercase text-[#9945FF]">
+                    L1
+                  </span>
+                </>
+              )}
+              {useTee && (
+                <Lock className="w-3 h-3 text-purple-400 ml-1" />
+              )}
+            </div>
+          )}
+
           {/* Solana Wallet Connect Button */}
           <div className="wallet-adapter-button-wrapper">
             <WalletMultiButton className="!bg-gradient-to-r !from-[#9945FF] !to-[#14F195] !border-2 !border-white/20 !rounded-none !font-mono !text-xs !font-bold !uppercase !h-auto !py-2 !px-3 hover:!opacity-90 !transition-opacity" />
@@ -822,6 +1137,71 @@ export default function PipelinePage() {
               {fileError && (
                 <div className="mt-4 max-w-3xl w-full bg-iodine border-2 border-charcoal p-4">
                   <p className="font-mono text-sm font-bold">{fileError}</p>
+                </div>
+              )}
+
+              {/* ER Privacy Mode Toggle */}
+              {connected && (
+                <div className="mt-6 max-w-3xl w-full">
+                  <div className="bg-gradient-to-r from-[#9945FF]/10 to-[#14F195]/10 border-2 border-[#9945FF]/30 p-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-gradient-to-br from-[#9945FF] to-[#14F195] rounded-lg flex items-center justify-center">
+                          <Zap className="w-5 h-5 text-white" />
+                        </div>
+                        <div>
+                          <p className="font-heading font-black text-sm uppercase text-charcoal">
+                            MagicBlock Ephemeral Rollups
+                          </p>
+                          <p className="font-mono text-xs text-charcoal/50">
+                            Gasless, sub-50ms on-chain verification
+                          </p>
+                        </div>
+                      </div>
+                      
+                      {/* TEE Toggle */}
+                      <div className="flex items-center gap-3">
+                        <span className="font-mono text-xs text-charcoal/60">Privacy Mode:</span>
+                        <button
+                          onClick={() => setUseTee(!useTee)}
+                          className={`
+                            relative inline-flex h-7 w-14 items-center rounded-full transition-all duration-300
+                            ${useTee 
+                              ? "bg-gradient-to-r from-purple-600 to-purple-500 shadow-lg shadow-purple-500/30" 
+                              : "bg-gradient-to-r from-[#14F195] to-[#14F195]/80 shadow-lg shadow-[#14F195]/30"
+                            }
+                          `}
+                        >
+                          <span
+                            className={`
+                              inline-flex h-5 w-5 transform items-center justify-center rounded-full bg-white shadow-md transition-transform
+                              ${useTee ? "translate-x-8" : "translate-x-1"}
+                            `}
+                          >
+                            {useTee ? (
+                              <Lock className="w-3 h-3 text-purple-600" />
+                            ) : (
+                              <Zap className="w-3 h-3 text-[#14F195]" />
+                            )}
+                          </span>
+                        </button>
+                        <span className={`font-mono text-xs font-bold ${useTee ? "text-purple-600" : "text-[#14F195]"}`}>
+                          {useTee ? "TEE Encrypted" : "Standard ER"}
+                        </span>
+                      </div>
+                    </div>
+                    
+                    {useTee && (
+                      <div className="mt-3 pt-3 border-t border-purple-500/20">
+                        <div className="flex items-center gap-2">
+                          <Lock className="w-4 h-4 text-purple-500" />
+                          <span className="font-mono text-xs text-purple-600">
+                            Patient data will be processed in a Trusted Execution Environment for maximum privacy
+                          </span>
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
               )}
 
@@ -1253,94 +1633,199 @@ export default function PipelinePage() {
                 </div>
               )}
 
-              {/* ─── Solana Web3 Verification Badge ─────────────────────────────── */}
-              {(solanaTxSignature || solanaLoading || solanaError) && (
-                <div className={`mb-8 border-2 p-4 max-w-lg w-full ${
+              {/* ─── MagicBlock ER Verification Panel ─────────────────────────────── */}
+              {(solanaTxSignature || solanaLoading || solanaError || patientPda || erLoading) && (
+                <div className={`mb-8 border-2 p-5 max-w-2xl w-full ${
                   solanaTxSignature 
-                    ? "border-[#14F195] bg-gradient-to-r from-[#9945FF]/10 to-[#14F195]/10" 
+                    ? "border-[#14F195] bg-gradient-to-br from-[#9945FF]/5 via-transparent to-[#14F195]/10" 
                     : solanaError 
-                    ? "border-hot-coral bg-iodine/10"
-                    : "border-[#9945FF] bg-[#9945FF]/10"
+                    ? "border-iodine bg-iodine/10"
+                    : "border-[#9945FF] bg-gradient-to-br from-[#9945FF]/10 to-transparent"
                 }`}>
-                  <div className="flex items-center justify-between">
+                  {/* Header */}
+                  <div className="flex items-center justify-between mb-4 pb-3 border-b border-white/10">
                     <div className="flex items-center gap-3">
-                      {/* Solana Logo */}
-                      <div className="w-10 h-10 bg-gradient-to-br from-[#9945FF] to-[#14F195] rounded-lg flex items-center justify-center">
-                        <svg viewBox="0 0 397.7 311.7" className="w-6 h-6">
-                          <linearGradient id="solana-grad" x1="360.8791" y1="351.4553" x2="141.213" y2="-69.2936" gradientUnits="userSpaceOnUse">
-                            <stop offset="0" style={{stopColor:"#00FFA3"}}/>
-                            <stop offset="1" style={{stopColor:"#DC1FFF"}}/>
-                          </linearGradient>
-                          <path fill="#fff" d="M64.6,237.9c2.4-2.4,5.7-3.8,9.2-3.8h317.4c5.8,0,8.7,7,4.6,11.1l-62.7,62.7c-2.4,2.4-5.7,3.8-9.2,3.8H6.5 c-5.8,0-8.7-7-4.6-11.1L64.6,237.9z"/>
-                          <path fill="#fff" d="M64.6,3.8C67.1,1.4,70.4,0,73.8,0h317.4c5.8,0,8.7,7,4.6,11.1l-62.7,62.7c-2.4,2.4-5.7,3.8-9.2,3.8H6.5 c-5.8,0-8.7-7-4.6-11.1L64.6,3.8z"/>
-                          <path fill="#fff" d="M333.1,120.1c-2.4-2.4-5.7-3.8-9.2-3.8H6.5c-5.8,0-8.7,7-4.6,11.1l62.7,62.7c2.4,2.4,5.7,3.8,9.2,3.8h317.4 c5.8,0,8.7-7,4.6-11.1L333.1,120.1z"/>
-                        </svg>
+                      {/* MagicBlock Logo */}
+                      <div className="w-12 h-12 bg-gradient-to-br from-[#9945FF] to-[#14F195] rounded-lg flex items-center justify-center shadow-lg">
+                        <Zap className="w-7 h-7 text-white" strokeWidth={2.5} />
                       </div>
                       <div>
-                        {solanaLoading ? (
-                          <>
-                            <p className="font-heading font-black text-sm uppercase text-[#9945FF]">
-                              Awaiting Signature...
-                            </p>
-                            <p className="font-mono text-xs text-charcoal/60">
-                              Please approve in Phantom wallet
-                            </p>
-                          </>
-                        ) : solanaError ? (
-                          <>
-                            <p className="font-heading font-black text-sm uppercase text-iodine">
-                              Web3 Verification Failed
-                            </p>
-                            <p className="font-mono text-xs text-charcoal/60">
-                              {solanaError}
-                            </p>
-                          </>
-                        ) : solanaTxSignature ? (
-                          <>
-                            <p className="font-heading font-black text-sm uppercase text-[#14F195]">
-                              Verified on Solana Devnet
-                            </p>
-                            <p className="font-mono text-xs text-charcoal/60">
-                              TX: {formatSignature(solanaTxSignature)}
-                            </p>
-                          </>
-                        ) : null}
+                        <p className="font-heading font-black text-lg uppercase tracking-tight text-charcoal">
+                          MagicBlock Ephemeral Rollups
+                        </p>
+                        <div className="flex items-center gap-2 mt-0.5">
+                          {isDelegated ? (
+                            <span className="flex items-center gap-1 px-2 py-0.5 bg-[#14F195]/20 border border-[#14F195]/40 text-[#14F195] text-[10px] font-bold uppercase rounded-sm">
+                              <Zap className="w-3 h-3" /> Gasless Active
+                            </span>
+                          ) : (
+                            <span className="px-2 py-0.5 bg-white/10 text-charcoal/60 text-[10px] font-bold uppercase rounded-sm">
+                              L1 Mode
+                            </span>
+                          )}
+                          {useTee && (
+                            <span className="flex items-center gap-1 px-2 py-0.5 bg-purple-500/20 border border-purple-500/40 text-purple-600 text-[10px] font-bold uppercase rounded-sm">
+                              <Lock className="w-3 h-3" /> TEE Encrypted
+                            </span>
+                          )}
+                        </div>
                       </div>
                     </div>
-                    {solanaTxSignature && (
+                    
+                    {/* Status Indicator */}
+                    <div className="flex items-center gap-2">
+                      {solanaLoading || erLoading ? (
+                        <div className="flex items-center gap-2 px-3 py-1.5 bg-[#9945FF]/20 rounded">
+                          <Loader2 className="w-4 h-4 text-[#9945FF] animate-spin" />
+                          <span className="font-mono text-xs text-[#9945FF]">Processing...</span>
+                        </div>
+                      ) : solanaTxSignature ? (
+                        <div className="flex items-center gap-2 px-3 py-1.5 bg-[#14F195]/20 rounded">
+                          <CheckCircle className="w-4 h-4 text-[#14F195]" />
+                          <span className="font-mono text-xs text-[#14F195]">Verified</span>
+                        </div>
+                      ) : solanaError ? (
+                        <div className="flex items-center gap-2 px-3 py-1.5 bg-iodine/20 rounded">
+                          <X className="w-4 h-4 text-iodine" />
+                          <span className="font-mono text-xs text-iodine">Failed</span>
+                        </div>
+                      ) : null}
+                    </div>
+                  </div>
+
+                  {/* ER Transaction Details */}
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+                    {/* Init Patient */}
+                    <div className={`p-3 rounded border ${erState.initPatient?.success ? "border-[#14F195]/40 bg-[#14F195]/5" : "border-white/10 bg-white/5"}`}>
+                      <div className="flex items-center gap-2 mb-1">
+                        <Activity className={`w-4 h-4 ${erState.initPatient?.success ? "text-[#14F195]" : "text-charcoal/40"}`} />
+                        <span className="font-mono text-[10px] uppercase text-charcoal/60">Init Patient</span>
+                      </div>
+                      {erState.initPatient?.success ? (
+                        <div className="font-mono text-xs text-[#14F195]">
+                          {erState.initPatient.timing?.durationMs}ms
+                        </div>
+                      ) : (
+                        <div className="font-mono text-xs text-charcoal/30">Pending</div>
+                      )}
+                    </div>
+
+                    {/* Delegate */}
+                    <div className={`p-3 rounded border ${erState.delegatePatient?.success ? "border-[#14F195]/40 bg-[#14F195]/5" : "border-white/10 bg-white/5"}`}>
+                      <div className="flex items-center gap-2 mb-1">
+                        <Unlock className={`w-4 h-4 ${erState.delegatePatient?.success ? "text-[#14F195]" : "text-charcoal/40"}`} />
+                        <span className="font-mono text-[10px] uppercase text-charcoal/60">Delegate</span>
+                      </div>
+                      {erState.delegatePatient?.success ? (
+                        <div className="font-mono text-xs text-[#14F195]">
+                          {erState.delegatePatient.timing?.durationMs}ms
+                        </div>
+                      ) : (
+                        <div className="font-mono text-xs text-charcoal/30">Pending</div>
+                      )}
+                    </div>
+
+                    {/* Record Match */}
+                    <div className={`p-3 rounded border ${erState.recordMatch?.success ? "border-[#14F195]/40 bg-[#14F195]/5" : "border-white/10 bg-white/5"}`}>
+                      <div className="flex items-center gap-2 mb-1">
+                        <Brain className={`w-4 h-4 ${erState.recordMatch?.success ? "text-[#14F195]" : "text-charcoal/40"}`} />
+                        <span className="font-mono text-[10px] uppercase text-charcoal/60">Match</span>
+                      </div>
+                      {erState.recordMatch?.success ? (
+                        <div className="font-mono text-xs text-[#14F195]">
+                          {erState.recordMatch.timing?.durationMs}ms {isDelegated && "⚡"}
+                        </div>
+                      ) : (
+                        <div className="font-mono text-xs text-charcoal/30">Pending</div>
+                      )}
+                    </div>
+
+                    {/* Consent */}
+                    <div className={`p-3 rounded border ${erState.logConsent?.success ? "border-[#14F195]/40 bg-[#14F195]/5" : "border-white/10 bg-white/5"}`}>
+                      <div className="flex items-center gap-2 mb-1">
+                        <Shield className={`w-4 h-4 ${erState.logConsent?.success ? "text-[#14F195]" : "text-charcoal/40"}`} />
+                        <span className="font-mono text-[10px] uppercase text-charcoal/60">Consent</span>
+                      </div>
+                      {erState.logConsent?.success ? (
+                        <div className="font-mono text-xs text-[#14F195]">
+                          {erState.logConsent.timing?.durationMs}ms {isDelegated && "⚡"}
+                        </div>
+                      ) : (
+                        <div className="font-mono text-xs text-charcoal/30">Pending</div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* On-Chain Details */}
+                  {(patientPda || solanaTxSignature) && (
+                    <div className="bg-charcoal/5 border border-white/10 rounded p-3 space-y-2">
+                      {patientPda && (
+                        <div className="flex items-center justify-between">
+                          <span className="font-mono text-[10px] uppercase text-charcoal/50">Patient PDA</span>
+                          <a 
+                            href={`https://solscan.io/account/${patientPda}?cluster=devnet`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="font-mono text-xs text-[#9945FF] hover:underline flex items-center gap-1"
+                          >
+                            {truncateAddress(patientPda)}
+                            <ExternalLink className="w-3 h-3" />
+                          </a>
+                        </div>
+                      )}
+                      {solanaTxSignature && (
+                        <div className="flex items-center justify-between">
+                          <span className="font-mono text-[10px] uppercase text-charcoal/50">Latest TX</span>
+                          <a 
+                            href={txUrl(solanaTxSignature)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="font-mono text-xs text-[#14F195] hover:underline flex items-center gap-1"
+                          >
+                            {truncateSignature(solanaTxSignature)}
+                            <ExternalLink className="w-3 h-3" />
+                          </a>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Error Display */}
+                  {solanaError && (
+                    <div className="mt-3 p-3 bg-iodine/10 border border-iodine/30 rounded">
+                      <p className="font-mono text-xs text-iodine">{solanaError}</p>
+                    </div>
+                  )}
+
+                  {/* View Proof Button */}
+                  {solanaTxSignature && (
+                    <div className="mt-4 flex justify-center">
                       <a
-                        href={getSolscanUrl(solanaTxSignature)}
+                        href={txUrl(solanaTxSignature)}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex items-center gap-2 bg-gradient-to-r from-[#9945FF] to-[#14F195] text-white px-4 py-2 font-mono text-xs font-bold uppercase hover:opacity-90 transition-opacity"
+                        className="flex items-center gap-2 bg-gradient-to-r from-[#9945FF] to-[#14F195] text-white px-6 py-2.5 font-mono text-sm font-bold uppercase hover:opacity-90 transition-opacity rounded shadow-lg"
                       >
-                        View Proof <ExternalLink className="w-4 h-4" />
+                        View On-Chain Proof <ExternalLink className="w-4 h-4" />
                       </a>
-                    )}
-                    {solanaLoading && (
-                      <Loader2 className="w-6 h-6 text-[#9945FF] animate-spin" />
-                    )}
-                  </div>
+                    </div>
+                  )}
                 </div>
               )}
 
               {/* Wallet not connected hint */}
               {!connected && currentStep === "complete" && !solanaTxSignature && (
-                <div className="mb-8 border-2 border-dashed border-[#9945FF]/50 p-4 max-w-lg w-full bg-[#9945FF]/5">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-[#9945FF]/20 rounded-lg flex items-center justify-center">
-                      <svg viewBox="0 0 397.7 311.7" className="w-6 h-6 opacity-50">
-                        <path fill="#9945FF" d="M64.6,237.9c2.4-2.4,5.7-3.8,9.2-3.8h317.4c5.8,0,8.7,7,4.6,11.1l-62.7,62.7c-2.4,2.4-5.7,3.8-9.2,3.8H6.5 c-5.8,0-8.7-7-4.6-11.1L64.6,237.9z"/>
-                        <path fill="#9945FF" d="M64.6,3.8C67.1,1.4,70.4,0,73.8,0h317.4c5.8,0,8.7,7,4.6,11.1l-62.7,62.7c-2.4,2.4-5.7,3.8-9.2,3.8H6.5 c-5.8,0-8.7-7-4.6-11.1L64.6,3.8z"/>
-                        <path fill="#9945FF" d="M333.1,120.1c-2.4-2.4-5.7-3.8-9.2-3.8H6.5c-5.8,0-8.7,7-4.6,11.1l62.7,62.7c2.4,2.4,5.7,3.8,9.2,3.8h317.4 c5.8,0,8.7-7,4.6-11.1L333.1,120.1z"/>
-                      </svg>
+                <div className="mb-8 border-2 border-dashed border-[#9945FF]/50 p-5 max-w-lg w-full bg-gradient-to-br from-[#9945FF]/5 to-transparent">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 bg-[#9945FF]/20 rounded-lg flex items-center justify-center">
+                      <Zap className="w-6 h-6 text-[#9945FF]/60" />
                     </div>
                     <div>
-                      <p className="font-heading font-black text-sm uppercase text-[#9945FF]/70">
-                        Web3 Audit Trail Available
+                      <p className="font-heading font-black text-sm uppercase text-[#9945FF]/80">
+                        MagicBlock ER Available
                       </p>
-                      <p className="font-mono text-xs text-charcoal/50">
-                        Connect wallet before processing to record on Solana
+                      <p className="font-mono text-xs text-charcoal/50 mt-0.5">
+                        Connect wallet to enable gasless on-chain verification via Ephemeral Rollups
                       </p>
                     </div>
                   </div>
