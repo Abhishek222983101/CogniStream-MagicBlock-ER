@@ -432,6 +432,11 @@ export default function PipelinePage() {
         const [pda] = derivePatientPda(publicKey, patientId);
         setPatientPda(pda.toBase58());
         
+        // Set signature for Solscan link (only if it's a real tx, not "existing-account")
+        if (!result.signature.includes("-")) {
+          setSolanaTxSignature(result.signature);
+        }
+        
         setERState(prev => ({ ...prev, initPatient: result }));
         incrementTxCount();
         if (result.timing) setLastTxTime(result.timing.durationMs);
@@ -471,6 +476,11 @@ export default function PipelinePage() {
         setIsDelegated(true);
         if (useTee) setMode("tee");
         else setMode("er");
+        
+        // Set signature for Solscan link (only if it's a real tx)
+        if (!result.signature.includes("-")) {
+          setSolanaTxSignature(result.signature);
+        }
         
         setERState(prev => ({ ...prev, delegatePatient: result }));
         incrementTxCount();
