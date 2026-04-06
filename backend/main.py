@@ -244,6 +244,7 @@ app.add_middleware(
 
 # ─── Register Routers ───────────────────────────────────────────────────────
 from backend.routers import anonymize, trials, match, parse, ingest, patients, tee_auth
+from backend.services.zk_verify import verify_zk_proof, format_verification_for_display
 
 app.include_router(anonymize.router, tags=["Anonymize"])
 app.include_router(trials.router, tags=["Trials"])
@@ -286,3 +287,24 @@ async def health_check():
         gpu_name=gpu_name,
         gpu_memory_gb=gpu_memory,
     )
+
+
+# ─── ZK-TLS Proof Verification ───────────────────────────────────────────────
+@app.post("/api/verify-zk")
+async def verify_zk_endpoint(proof_data: dict):
+    """
+    Verify a ZK-TLS proof from Reclaim Protocol.
+
+    This endpoint validates that a patient's diagnosis data
+    was cryptographically verified from a healthcare portal
+    without revealing their identity.
+
+    Request body should contain:
+    - proofHash: The ZK proof hash
+    - provider: Healthcare provider ID (APOLLO, AIIMS, MAX, GENERIC)
+    - claimedFields: Object with diagnosis, age, gender, etc.
+    - signature: Cryptographic signature
+    - confidence: Confidence score (0-100)
+    """
+    result = verify_zk_proof(proof_data)
+    return format_verification_for_display(result)

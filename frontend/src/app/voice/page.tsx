@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowLeft,
@@ -20,14 +21,55 @@ import {
   Send,
   Keyboard,
   X,
+  Zap,
+  Shield,
+  CheckCircle,
+  ExternalLink,
+  AlertTriangle,
 } from "lucide-react";
+
+// Wallet imports
+import { useWallet, useConnection } from "@solana/wallet-adapter-react";
+const WalletMultiButton = dynamic(
+  () => import("@solana/wallet-adapter-react-ui").then((mod) => mod.WalletMultiButton),
+  { ssr: false }
+);
+
+// ER Integration
+import { createERClient, ERClient } from "@/lib/er-client";
+import { 
+  logVoiceConsent, 
+  ConsentType, 
+  getConsentTypeName,
+  getConsentTypeDescription,
+  ConsentTransactionResult,
+} from "@/lib/voice-consent";
+import { txUrl } from "@/lib/explorer";
 
 interface ConversationItem {
   id: string;
-  type: "user" | "assistant";
+  type: "user" | "assistant" | "consent";
   text: string;
   timestamp: Date;
   sources?: { id: string; type: string; title: string }[];
+  consentData?: {
+    type: ConsentType;
+    trialId: string;
+    status: "pending" | "processing" | "success" | "error";
+    signature?: string;
+    timing?: number;
+    error?: string;
+  };
+}
+
+interface ConsentIntent {
+  detected: boolean;
+  consentType?: number;
+  consentTypeName?: string;
+  trialId?: string;
+  confidence: number;
+  matchedPattern?: string;
+  requiresWalletAction: boolean;
 }
 
 // Animated waveform component
@@ -145,9 +187,90 @@ const VoiceOrb = ({
   );
 };
 
+// Consent Transaction Card
+const ConsentTransactionCard = ({ 
+  consentData 
+}: { 
+  consentData: ConversationItem['consentData'] 
+}) => {
+  if (!consentData) return null;
+
+  const statusColors = {
+    pending: "border-cobalt/50 bg-cobalt/10",
+    processing: "border-[#9945FF]/50 bg-[#9945FF]/10",
+    success: "border-[#14F195]/50 bg-[#14F195]/10",
+    error: "border-iodine/50 bg-iodine/10",
+  };
+
+  const statusIcons = {
+    pending: <Shield className="w-5 h-5 text-cobalt" />,
+    processing: <Loader2 className="w-5 h-5 text-[#9945FF] animate-spin" />,
+    success: <CheckCircle className="w-5 h-5 text-[#14F195]" />,
+    error: <AlertTriangle className="w-5 h-5 text-iodine" />,
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, scale: 0.95 }}
+      animate={{ opacity: 1, scale: 1 }}
+      className={`mt-3 p-4 rounded-xl border-2 ${statusColors[consentData.status]}`}
+    >
+      <div className="flex items-center gap-3 mb-3">
+        {statusIcons[consentData.status]}
+        <div>
+          <p className="font-heading font-black text-sm uppercase">
+            {getConsentTypeName(consentData.type)}
+          </p>
+          <p className="font-mono text-[10px] text-charcoal/60">
+            {consentData.trialId}
+          </p>
+        </div>
+        {consentData.status === "success" && consentData.timing && (
+          <div className="ml-auto flex items-center gap-1 px-2 py-1 bg-[#14F195]/20 rounded">
+            <Zap className="w-3 h-3 text-[#14F195]" />
+            <span className="font-mono text-[10px] text-[#14F195] font-bold">
+              {consentData.timing}ms
+            </span>
+          </div>
+        )}
+      </div>
+
+      {consentData.status === "success" && consentData.signature && (
+        // Only show Solscan link for real transaction signatures (not special status strings)
+        consentData.signature.includes("-") ? (
+          <div className="flex items-center gap-2 text-[#14F195] font-mono text-xs">
+            <CheckCircle className="w-3 h-3" />
+            <span>Already recorded on-chain</span>
+          </div>
+        ) : (
+          <a
+            href={txUrl(consentData.signature)}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-2 text-[#14F195] hover:underline font-mono text-xs"
+          >
+            View on Solscan <ExternalLink className="w-3 h-3" />
+          </a>
+        )
+      )}
+
+      {consentData.status === "error" && consentData.error && (
+        <p className="font-mono text-xs text-iodine">{consentData.error}</p>
+      )}
+
+      {consentData.status === "processing" && (
+        <p className="font-mono text-xs text-[#9945FF]">
+          Recording consent on Solana via MagicBlock ER...
+        </p>
+      )}
+    </motion.div>
+  );
+};
+
 // Conversation bubble
 const ConversationBubble = ({ item }: { item: ConversationItem }) => {
   const isUser = item.type === "user";
+  const isConsent = item.type === "consent";
   
   return (
     <motion.div
@@ -160,11 +283,25 @@ const ConversationBubble = ({ item }: { item: ConversationItem }) => {
           className={`px-4 py-3 rounded-2xl ${
             isUser
               ? "bg-charcoal text-white rounded-br-sm"
+              : isConsent
+              ? "bg-gradient-to-r from-[#9945FF]/20 to-[#14F195]/20 border-2 border-[#9945FF]/30 text-charcoal rounded-bl-sm"
               : "bg-white border-2 border-charcoal/10 text-charcoal rounded-bl-sm"
           }`}
         >
+          {isConsent && (
+            <div className="flex items-center gap-2 mb-2">
+              <Zap className="w-4 h-4 text-[#9945FF]" />
+              <span className="font-mono text-[10px] uppercase text-[#9945FF] font-bold">
+                On-Chain Consent
+              </span>
+            </div>
+          )}
           <p className="font-mono text-sm leading-relaxed">{item.text}</p>
         </div>
+
+        {item.consentData && (
+          <ConsentTransactionCard consentData={item.consentData} />
+        )}
         
         {item.sources && item.sources.length > 0 && (
           <div className="mt-2 flex flex-wrap gap-1">
@@ -204,10 +341,74 @@ export default function VoiceAssistantPage() {
   const [inputMode, setInputMode] = useState<"voice" | "text">("voice");
   const [isVoiceSupported, setIsVoiceSupported] = useState(true);
   
+  // ER Client State
+  const [erClient, setERClient] = useState<ERClient | null>(null);
+  const [currentTrialId, setCurrentTrialId] = useState<string | null>(null);
+  const [currentPatientId, setCurrentPatientId] = useState<string | null>(null);
+  
+  // Wallet
+  const { publicKey, connected, signTransaction, signAllTransactions } = useWallet();
+  const { connection } = useConnection();
+  
   const conversationEndRef = useRef<HTMLDivElement>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const recognitionRef = useRef<any>(null);
   const textInputRef = useRef<HTMLTextAreaElement>(null);
+
+  // Initialize ER Client when wallet connects
+  useEffect(() => {
+    if (publicKey && connected && signTransaction && signAllTransactions) {
+      const client = createERClient(connection, {
+        publicKey,
+        signTransaction: signTransaction as any,
+        signAllTransactions: signAllTransactions as any,
+      });
+      setERClient(client);
+      console.log("[Voice] ER Client initialized");
+    } else {
+      setERClient(null);
+    }
+  }, [publicKey, connected, signTransaction, signAllTransactions, connection]);
+
+  // Load patient/trial context from sessionStorage
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const stored = sessionStorage.getItem('cognistream_pipeline_results');
+        console.log("[Voice] Checking sessionStorage for pipeline results...");
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          console.log("[Voice] Found pipeline results:", {
+            patient: parsed.patient,
+            hasMatches: !!parsed.matches?.matches?.length,
+            topTrialId: parsed.matches?.matches?.[0]?.trial_id
+          });
+          
+          if (parsed.patient) {
+            setCurrentPatientId(parsed.patient);
+            console.log("[Voice] Loaded patient context:", parsed.patient);
+          }
+          
+          // Load trial ID from matches - try multiple paths
+          const trialId = parsed.matches?.matches?.[0]?.trial_id || 
+                          parsed.topTrialId ||
+                          parsed.currentTrialId;
+          if (trialId) {
+            setCurrentTrialId(trialId);
+            console.log("[Voice] Loaded trial context:", trialId);
+          } else {
+            console.warn("[Voice] No trial ID found in session, using fallback");
+            // Set a reasonable default based on pipeline results
+            setCurrentTrialId("NCT05894239"); // Default to common trial ID
+          }
+        } else {
+          console.warn("[Voice] No pipeline results in sessionStorage - run pipeline first!");
+        }
+      } catch (e) {
+        console.warn("[Voice] Failed to load session context:", e);
+      }
+    }
+  }, []);
 
   // Check API status on mount
   useEffect(() => {
@@ -229,6 +430,116 @@ export default function VoiceAssistantPage() {
   useEffect(() => {
     conversationEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [conversation]);
+
+  // Handle consent transaction
+  const handleConsentTransaction = useCallback(async (
+    consentIntent: ConsentIntent,
+    conversationId: string
+  ) => {
+    if (!erClient || !publicKey || !connected) {
+      // Update conversation with error
+      setConversation(prev => prev.map(item => {
+        if (item.id === conversationId && item.consentData) {
+          return {
+            ...item,
+            consentData: {
+              ...item.consentData,
+              status: "error" as const,
+              error: "Wallet not connected. Please connect your Phantom wallet to log consent on-chain.",
+            }
+          };
+        }
+        return item;
+      }));
+      return;
+    }
+
+    const patientId = currentPatientId as string;
+    if (!currentPatientId) {
+      setConversation(prev => prev.map(item => {
+        if (item.id === conversationId && item.consentData) {
+          return {
+            ...item,
+            consentData: {
+              ...item.consentData,
+              status: "error" as const,
+              error: "Patient not initialized. Please run the pipeline first from the Dashboard.",
+            }
+          };
+        }
+        return item;
+      }));
+      return;
+    }
+    
+    // Use a valid trial ID - fallback chain with better defaults
+    const trialId = consentIntent.trialId || currentTrialId || "NCT05894239";
+    console.log("[Voice] Using trial ID for consent:", trialId, {
+      fromIntent: consentIntent.trialId,
+      fromState: currentTrialId,
+      usingFallback: !consentIntent.trialId && !currentTrialId
+    });
+    const consentType = consentIntent.consentType ?? ConsentType.ContactForEnrollment;
+
+    // Update status to processing
+    setConversation(prev => prev.map(item => {
+      if (item.id === conversationId && item.consentData) {
+        return {
+          ...item,
+          consentData: {
+            ...item.consentData,
+            status: "processing" as const,
+          }
+        };
+      }
+      return item;
+    }));
+
+    try {
+      const result = await logVoiceConsent(
+        erClient,
+        patientId,
+        trialId,
+        consentType,
+        true // isDelegated - use gasless ER
+      );
+
+      // Update conversation with result
+      setConversation(prev => prev.map(item => {
+        if (item.id === conversationId && item.consentData) {
+          return {
+            ...item,
+            consentData: {
+              ...item.consentData,
+              status: result.success ? "success" as const : "error" as const,
+              signature: result.signature,
+              timing: result.timing?.durationMs,
+              error: result.error,
+            }
+          };
+        }
+        return item;
+      }));
+
+      if (result.success) {
+        console.log("[Voice] Consent logged on-chain:", result.signature);
+      }
+    } catch (err: any) {
+      setConversation(prev => prev.map(item => {
+        if (item.id === conversationId && item.consentData) {
+          return {
+            ...item,
+            consentData: {
+              ...item.consentData,
+              status: "error" as const,
+              error: err.message || "Failed to log consent",
+            }
+          };
+        }
+        return item;
+      }));
+    }
+  }, [erClient, publicKey, connected, currentPatientId, currentTrialId]);
 
   // Initialize speech recognition
   const startListening = () => {
@@ -377,6 +688,8 @@ export default function VoiceAssistantPage() {
         body: JSON.stringify({
           message: text.trim(),
           generateAudio: !isMuted,
+          currentTrialId,
+          patientId: currentPatientId,
         }),
       });
 
@@ -387,15 +700,37 @@ export default function VoiceAssistantPage() {
 
       const data = await response.json();
 
+      // Check if consent intent was detected
+      const consentIntent = data.consentIntent as ConsentIntent | undefined;
+      
       // Add assistant response
+      const assistantMessageId = (Date.now() + 1).toString();
       const assistantMessage: ConversationItem = {
-        id: (Date.now() + 1).toString(),
-        type: "assistant",
+        id: assistantMessageId,
+        type: consentIntent?.detected ? "consent" : "assistant",
         text: data.response,
         timestamp: new Date(),
         sources: data.sources,
+        consentData: consentIntent?.detected ? {
+          type: consentIntent.consentType ?? ConsentType.ContactForEnrollment,
+          trialId: consentIntent.trialId || currentTrialId || "UNKNOWN",
+          status: "pending",
+        } : undefined,
       };
       setConversation((prev) => [...prev, assistantMessage]);
+
+      // If consent detected, trigger on-chain transaction
+      if (consentIntent?.detected && consentIntent.requiresWalletAction) {
+        // Small delay to show pending state
+        setTimeout(() => {
+          handleConsentTransaction(consentIntent, assistantMessageId);
+        }, 500);
+      }
+
+      // Update current trial ID if mentioned in response
+      if (consentIntent?.trialId) {
+        setCurrentTrialId(consentIntent.trialId);
+      }
 
       // Play audio if available and not muted
       if (data.audio && !isMuted) {
@@ -487,8 +822,8 @@ export default function VoiceAssistantPage() {
   const suggestedQueries = [
     "Find lung cancer trials in Mumbai",
     "Are there any diabetes trials for elderly patients?",
-    "Which trials accept EGFR positive patients?",
-    "Tell me about Phase 3 oncology trials in Bangalore",
+    "I want to participate in a KRAS G12C trial",
+    "Contact me about the top matching trial",
   ];
 
   return (
@@ -509,6 +844,11 @@ export default function VoiceAssistantPage() {
         </Link>
         
         <div className="flex items-center gap-3">
+          {/* Wallet Connect */}
+          <div className="wallet-adapter-button-wrapper">
+            <WalletMultiButton className="!bg-gradient-to-r !from-[#9945FF] !to-[#14F195] !border-2 !border-white/20 !rounded-lg !font-mono !text-[10px] !font-bold !uppercase !h-8 !py-1 !px-3 hover:!opacity-90 !transition-opacity" />
+          </div>
+          
           <button
             onClick={() => setIsMuted(!isMuted)}
             className={`p-2 rounded-lg border-2 transition-colors ${
@@ -535,6 +875,36 @@ export default function VoiceAssistantPage() {
       {/* Main Content */}
       <main className="flex-1 flex flex-col max-w-4xl mx-auto w-full px-4 py-6">
         
+        {/* ER Status Banner */}
+        {connected && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-4 p-3 bg-gradient-to-r from-[#9945FF]/10 to-[#14F195]/10 border-2 border-[#9945FF]/30 rounded-xl"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 bg-gradient-to-br from-[#9945FF] to-[#14F195] rounded-lg flex items-center justify-center">
+                <Zap className="w-4 h-4 text-white" />
+              </div>
+              <div>
+                <p className="font-heading font-black text-xs uppercase text-charcoal">
+                  MagicBlock ER Active
+                </p>
+                <p className="font-mono text-[10px] text-charcoal/60">
+                  Voice consent will be recorded gasless on Solana
+                </p>
+              </div>
+              {currentPatientId && (
+                <div className="ml-auto px-2 py-1 bg-white/50 rounded border border-charcoal/10">
+                  <span className="font-mono text-[10px] text-charcoal/60">
+                    Patient: <span className="text-charcoal font-bold">{currentPatientId}</span>
+                  </span>
+                </div>
+              )}
+            </div>
+          </motion.div>
+        )}
+
         {/* Conversation Area */}
         <div className="flex-1 overflow-y-auto mb-4 space-y-4 min-h-[150px]">
           {conversation.length === 0 ? (
@@ -550,7 +920,7 @@ export default function VoiceAssistantPage() {
                 Voice-Powered Trial Matching
               </h2>
               <p className="font-mono text-sm text-charcoal/60 max-w-md mx-auto mb-6">
-                Speak or type your query to find clinical trials in India.
+                Speak or type your query to find clinical trials. Say "I want to participate" to log consent on-chain.
               </p>
               
               {/* Suggested queries */}
@@ -741,7 +1111,7 @@ export default function VoiceAssistantPage() {
             { icon: <Mic className="w-3 h-3" />, label: "Voice Input" },
             { icon: <Keyboard className="w-3 h-3" />, label: "Text Input" },
             { icon: <Brain className="w-3 h-3" />, label: "AI Powered" },
-            { icon: <Volume2 className="w-3 h-3" />, label: "Voice Response" },
+            { icon: <Zap className="w-3 h-3" />, label: "Gasless Consent" },
           ].map((feature, i) => (
             <div
               key={i}
@@ -760,7 +1130,7 @@ export default function VoiceAssistantPage() {
       <footer className="bg-white/50 border-t border-charcoal/10 px-4 py-3 text-center">
         <p className="font-mono text-[10px] text-charcoal/40 flex items-center justify-center gap-2">
           <Info className="w-3 h-3" />
-          Designed for accessibility - use voice or text input
+          Say "I want to participate" or "Contact me" to log consent on Solana
         </p>
       </footer>
     </div>

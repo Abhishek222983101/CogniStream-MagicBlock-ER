@@ -32,6 +32,7 @@ import {
   Loader2,
   TrendingUp,
   Mic,
+  Database,
 } from "lucide-react";
 import {
   fetchHealth,
@@ -249,6 +250,14 @@ export default function CoordinatorDashboard() {
               ))}
 
               <div className="my-4 border-t border-charcoal/10 mx-2" />
+
+              <Link href="/pipeline">
+                <button className="sidebar-item w-full flex items-center gap-3 px-3 py-2.5 rounded-sm transition-all text-sm font-mono bg-gradient-to-r from-surgical/10 to-cobalt/10 text-charcoal hover:from-surgical/20 hover:to-cobalt/20 border-2 border-surgical/20">
+                  <Database className="w-4 h-4 shrink-0 text-surgical" strokeWidth={2} />
+                  <span className={!sidebarOpen ? "lg:hidden" : ""}>Run Pipeline</span>
+                  <span className="ml-auto text-[8px] font-bold bg-cobalt text-white px-1.5 py-0.5 rounded uppercase">Web3</span>
+                </button>
+              </Link>
 
               <Link href="/chat">
                 <button className="sidebar-item w-full flex items-center gap-3 px-3 py-2.5 rounded-sm transition-all text-sm font-mono text-charcoal/70 hover:text-charcoal hover:bg-paper/50 border-2 border-transparent">

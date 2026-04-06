@@ -99,6 +99,28 @@ class NERAnonymizer:
                 }
             )
 
+        # Generate a new anonymized ID explicitly, overriding the old ID
+        old_id = anonymized.get("patient_id", "")
+        # Create an anonymized ID based on timestamp/hash to guarantee it changes
+        import time
+
+        new_id = (
+            f"ANON_{hashlib.md5(str(time.time()).encode()).hexdigest()[:8].upper()}"
+        )
+
+        anonymized["patient_id"] = new_id
+
+        if old_id:
+            replacements[old_id] = new_id
+            entities_found.append(
+                {
+                    "text": old_id,
+                    "type": "IDENTIFIER",
+                    "source": "patient_id",
+                    "replacement": new_id,
+                }
+            )
+
         # City (keep for geo matching but flag it)
         if demographics.get("city"):
             original_city = demographics["city"]

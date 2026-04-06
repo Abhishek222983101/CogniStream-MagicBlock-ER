@@ -22,9 +22,11 @@ const ENDPOINTS = {
   // TEE/Private ER
   TEE: "https://devnet-tee.magicblock.app",
   TEE_WS: "wss://devnet-tee.magicblock.app",
-  // Base Layer (Solana Devnet)
-  L1: "https://api.devnet.solana.com",
-  L1_WS: "wss://api.devnet.solana.com",
+  // Base Layer (Solana Devnet) - Using Helius for better rate limits and reliability
+  L1: "https://devnet.helius-rpc.com/?api-key=15319bf4-5b40-4958-ac8d-6313aa55eb92",
+  L1_WS: "wss://devnet.helius-rpc.com/?api-key=15319bf4-5b40-4958-ac8d-6313aa55eb92",
+  // Fallback public devnet
+  L1_PUBLIC: "https://api.devnet.solana.com",
 };
 
 // ─── Validators ──────────────────────────────────────────────────────────────
@@ -37,8 +39,11 @@ export const VALIDATORS = {
 
 // ─── Program IDs ─────────────────────────────────────────────────────────────
 export const PROGRAM_IDS = {
-  COGNISTREAM: "H5z3iR81T3cDscsCEGa9aqExDy9SpZu3zq88SxtNFpWh",
+  // Deployed CogniStream program on Devnet
+  COGNISTREAM: "3YUtpqBtoJshnq7zWviWFrdWc82pgiDLM9wjfFujGMEg",
+  // MagicBlock Delegation Program
   DELEGATION: "DELeGGvXpWV2fqJUhqcF5ZSYMS4JTLjteaAMARRSaeSh",
+  // MagicBlock Permission Program
   PERMISSION: "ACLseoPoyC3cBqoUtkbjZ4aDrkurZW86v19pXz2XQnp1",
 };
 

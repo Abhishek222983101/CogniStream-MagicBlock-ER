@@ -1,4 +1,4 @@
-import { ArrowRight, Activity, Database, Server, Brain, Target, Shield, MapPin, CheckCircle2, XCircle, AlertCircle, Terminal, Mic } from "lucide-react";
+import { ArrowRight, Activity, Database, Server, Brain, Target, Shield, MapPin, CheckCircle2, XCircle, AlertCircle, Terminal, Mic, Zap, Lock, Globe } from "lucide-react";
 import Link from "next/link";
 import HeroText from "@/components/ui/hero-shutter-text";
 import { MetricsScoreCards } from "@/components/ui/metrics-score-cards";
@@ -146,6 +146,95 @@ export default function Home() {
                   </p>
                 </div>
               </div>
+            </div>
+          </div>
+        </section>
+
+        {/* MagicBlock ER Section - NEW */}
+        <section className="px-6 py-16 md:px-12 md:py-24 bg-gradient-to-br from-charcoal via-charcoal to-cobalt/30 border-brutal-b relative overflow-hidden">
+          <div className="absolute inset-0 bg-grid-pattern-dark opacity-50" />
+          <div className="max-w-7xl mx-auto relative z-10">
+            <div className="text-center mb-12">
+              <span className="inline-flex items-center gap-2 font-mono text-xs font-bold uppercase tracking-[0.3em] text-surgical mb-4 bg-surgical/10 border border-surgical/30 px-4 py-2">
+                <Zap className="w-4 h-4" /> Powered by MagicBlock
+              </span>
+              <h2 className="font-heading text-3xl md:text-4xl lg:text-5xl font-black uppercase tracking-tight text-white mb-4">
+                Ephemeral Rollups for Healthcare
+              </h2>
+              <p className="font-mono text-base md:text-lg text-white/70 max-w-2xl mx-auto">
+                Patient data deserves the fastest, most private blockchain infrastructure. 
+                MagicBlock Ephemeral Rollups deliver sub-50ms transactions with zero gas fees.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {/* Speed */}
+              <div className="bg-white/5 backdrop-blur-sm border-2 border-white/10 p-6 hover:border-surgical/50 transition-colors">
+                <div className="w-12 h-12 bg-surgical/20 border border-surgical/30 flex items-center justify-center mb-4">
+                  <Zap className="w-6 h-6 text-surgical" />
+                </div>
+                <h3 className="font-heading text-xl font-bold text-white mb-2 uppercase">Sub-50ms Latency</h3>
+                <p className="font-mono text-sm text-white/60 mb-4">
+                  Record patient matches and consent in real-time. No waiting for block confirmations.
+                </p>
+                <div className="flex items-center gap-2 text-surgical font-mono text-xs font-bold">
+                  <span className="w-2 h-2 rounded-full bg-surgical animate-pulse" />
+                  EPHEMERAL ROLLUP ACTIVE
+                </div>
+              </div>
+
+              {/* Gasless */}
+              <div className="bg-white/5 backdrop-blur-sm border-2 border-white/10 p-6 hover:border-cobalt/50 transition-colors">
+                <div className="w-12 h-12 bg-cobalt/20 border border-cobalt/30 flex items-center justify-center mb-4">
+                  <Globe className="w-6 h-6 text-cobalt" />
+                </div>
+                <h3 className="font-heading text-xl font-bold text-white mb-2 uppercase">Zero Gas Fees</h3>
+                <p className="font-mono text-sm text-white/60 mb-4">
+                  Patients never pay transaction fees. Delegation enables gasless operations on ER.
+                </p>
+                <div className="flex items-center gap-2 text-cobalt font-mono text-xs font-bold">
+                  <span className="w-2 h-2 rounded-full bg-cobalt" />
+                  DELEGATED MODE
+                </div>
+              </div>
+
+              {/* Privacy */}
+              <div className="bg-white/5 backdrop-blur-sm border-2 border-white/10 p-6 hover:border-iodine/50 transition-colors">
+                <div className="w-12 h-12 bg-iodine/20 border border-iodine/30 flex items-center justify-center mb-4">
+                  <Lock className="w-6 h-6 text-iodine" />
+                </div>
+                <h3 className="font-heading text-xl font-bold text-white mb-2 uppercase">TEE Privacy</h3>
+                <p className="font-mono text-sm text-white/60 mb-4">
+                  Sensitive health data processed in Trusted Execution Environments. Encrypted until consent.
+                </p>
+                <div className="flex items-center gap-2 text-iodine font-mono text-xs font-bold">
+                  <span className="w-2 h-2 rounded-full bg-iodine" />
+                  TEE ENCRYPTED
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-12 flex flex-col md:flex-row items-center justify-center gap-6">
+              <Link
+                href="/patients"
+                className="inline-flex items-center gap-3 bg-surgical text-white brutal-btn px-8 py-4 text-sm uppercase"
+              >
+                <Database className="w-5 h-5" /> Explore On-Chain Data
+              </Link>
+              <Link
+                href="/pipeline"
+                className="inline-flex items-center gap-3 bg-white/10 text-white border-2 border-white/20 hover:bg-white hover:text-charcoal brutal-btn px-8 py-4 text-sm uppercase transition-colors"
+              >
+                <Zap className="w-5 h-5" /> Try ER Demo
+              </Link>
+            </div>
+
+            {/* Program ID */}
+            <div className="mt-12 text-center">
+              <p className="font-mono text-[10px] text-white/40 uppercase tracking-widest mb-2">Deployed on Solana Devnet</p>
+              <code className="font-mono text-xs text-white/60 bg-white/5 px-4 py-2 border border-white/10">
+                3YUtpqBtoJshnq7zWviWFrdWc82pgiDLM9wjfFujGMEg
+              </code>
             </div>
           </div>
         </section>

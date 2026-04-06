@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Bricolage_Grotesque, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import WalletProvider from "@/components/WalletProvider";
+import { ToastProvider } from "@/components/Toast";
 
 const bricolage = Bricolage_Grotesque({
   variable: "--font-heading",
@@ -16,8 +17,8 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "CogniStream | Passive Cognitive Monitoring",
-  description: "Early detection of cognitive decline through passive keyboard kinetics.",
+  title: "CogniStream | Privacy-First Clinical Trial Matching",
+  description: "AI-powered clinical trial matching on Solana with MagicBlock Ephemeral Rollups for gasless, private transactions.",
 };
 
 export default function RootLayout({
@@ -30,7 +31,11 @@ export default function RootLayout({
       <body
         className={`${bricolage.variable} ${jetbrainsMono.variable} antialiased selection:bg-black selection:text-[#A7F3D0]`}
       >
-        <WalletProvider>{children}</WalletProvider>
+        <WalletProvider>
+          <ToastProvider>
+            {children}
+          </ToastProvider>
+        </WalletProvider>
       </body>
     </html>
   );

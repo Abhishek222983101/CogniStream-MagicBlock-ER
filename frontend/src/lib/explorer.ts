@@ -148,3 +148,26 @@ export function getExplorerLinkProps(
     rel: "noopener noreferrer" as const,
   };
 }
+
+// ─── Convenience Function (used by pages) ─────────────────────────────────────
+
+/**
+ * Get Solscan URL for any entity type
+ * Convenience function used across pages
+ */
+export function getSolscanUrl(
+  type: "tx" | "address" | "token" | "block",
+  value: string | number,
+  network: Network = DEFAULT_NETWORK
+): string {
+  switch (type) {
+    case "tx":
+      return txUrl(value as string, network);
+    case "address":
+      return accountUrl(value as string, network);
+    case "token":
+      return tokenUrl(value as string, network);
+    case "block":
+      return blockUrl(value as number, network);
+  }
+}

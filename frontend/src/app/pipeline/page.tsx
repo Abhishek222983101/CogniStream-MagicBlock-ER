@@ -64,6 +64,8 @@ import {
   IngestResponse,
 } from "@/lib/api";
 import { DigitalIndiaPopup } from "@/components/ui/animated-tooltip";
+import { VerifyWithReclaim } from "@/components/VerifyWithReclaim";
+import { ZKProofData, getProofFromSession, storeProofInSession } from "@/lib/reclaim-client";
 
 type PipelineStep = "upload" | "extract" | "anonymize" | "processing" | "complete";
 
@@ -197,6 +199,13 @@ export default function PipelinePage() {
   const [solanaLoading, setSolanaLoading] = useState(false);
   const [solanaError, setSolanaError] = useState<string | null>(null);
 
+  // ZK-TLS Proof State (Reclaim Protocol)
+  const [zkProofData, setZkProofData] = useState<ZKProofData | null>(null);
+
+  // CRITICAL: Use a ref to store the patient ID so it stays STABLE throughout the entire pipeline run
+  // This prevents any chance of ID regeneration during React re-renders
+  const currentPatientIdRef = useRef<string | null>(null);
+
   // ─── Ephemeral Rollups State ─────────────────────────────────────────────────
   const [erState, setERState] = useState<ERTransactionState>(initialERState);
   const [erClient, setERClient] = useState<ERClient | null>(null);
@@ -232,6 +241,15 @@ export default function PipelinePage() {
       setERClient(null);
     }
   }, [publicKey, connected, signTransaction, signAllTransactions, connection]);
+
+  // Load existing ZK proof from session (if returning to page)
+  useEffect(() => {
+    const existingProof = getProofFromSession();
+    if (existingProof) {
+      setZkProofData(existingProof);
+      console.log("[Pipeline] Loaded existing ZK proof from session:", existingProof.proofHash);
+    }
+  }, []);
 
   const terminalRef = useRef<HTMLDivElement>(null);
 
@@ -351,6 +369,13 @@ export default function PipelinePage() {
     setIngestError(null);
   }, []);
 
+  // ─── ZK-TLS Verification Handler ──────────────────────────────────────────────
+  const handleZKVerification = useCallback((proofData: ZKProofData) => {
+    setZkProofData(proofData);
+    storeProofInSession(proofData);
+    console.log("[Pipeline] ZK verification complete:", proofData.proofHash);
+  }, []);
+
   // ─── NLP Extraction (Upload step → Extract step) ────────────────────────────
   const startExtraction = useCallback(async () => {
     setCurrentStep("extract");
@@ -418,7 +443,10 @@ export default function PipelinePage() {
     addLog("ER: Initializing patient on Solana L1...", "info");
     
     try {
+      // Create a deterministic hash of the patient data to prove what data was used
+      console.log(`[ER] Hashing patient data for ID ${patientId}:`, patientDataForHash);
       const dataHash = await hashPatientData(patientDataForHash);
+      
       const result = await erClient.initPatient({
         patientId,
         dataHash,
@@ -536,8 +564,11 @@ export default function PipelinePage() {
         addLog(`ER: Match recorded! Tx: ${truncateSignature(result.signature)} (${result.timing?.durationMs}ms)`, "success");
         
         setERState(prev => ({ ...prev, recordMatch: result }));
-        setSolanaTxSignature(result.signature);
-        incrementTxCount();
+        // Only set signature for Solscan link if it's a real tx (not "match-already-exists" etc.)
+        if (!result.signature.includes("-")) {
+          setSolanaTxSignature(result.signature);
+          incrementTxCount();
+        }
         if (result.timing) setLastTxTime(result.timing.durationMs);
         
         return result;
@@ -580,7 +611,10 @@ export default function PipelinePage() {
         addLog(`ER: Consent logged! Tx: ${truncateSignature(result.signature)} (${result.timing?.durationMs}ms)`, "success");
         
         setERState(prev => ({ ...prev, logConsent: result }));
-        incrementTxCount();
+        // Only increment tx count for real transactions (not "consent-already-exists" etc.)
+        if (!result.signature.includes("-")) {
+          incrementTxCount();
+        }
         if (result.timing) setLastTxTime(result.timing.durationMs);
         
         return result;
@@ -613,6 +647,7 @@ export default function PipelinePage() {
 
     try {
       // Step 1: Initialize patient on L1
+      addLog("ER: Step 1/4 - Initializing patient on Solana L1...", "info");
       const initResult = await initPatientOnChain(patientId, patientDataForHash);
       if (!initResult?.success) {
         // Patient might already exist - try to continue
@@ -620,6 +655,7 @@ export default function PipelinePage() {
       }
 
       // Step 2: Delegate to ER (enables gasless transactions)
+      addLog("ER: Step 2/4 - Delegating to Ephemeral Rollup...", "info");
       const delegateResult = await delegatePatientToER(patientId);
       if (!delegateResult?.success) {
         // Delegation failed but we can still try to record on L1
@@ -627,7 +663,8 @@ export default function PipelinePage() {
       }
 
       // Step 3: Record match result (GASLESS if delegated!)
-      const matchResult = await recordMatchOnChain(
+      addLog(`ER: Step 3/4 - Recording match ${topMatch.trial_id}...`, "info");
+      const matchResultOnChain = await recordMatchOnChain(
         patientId,
         topMatch.trial_id,
         topMatch.composite_score,
@@ -638,15 +675,18 @@ export default function PipelinePage() {
       );
 
       // Step 4: Log consent (GASLESS if delegated!)
-      if (matchResult?.success) {
+      if (matchResultOnChain?.success) {
+        addLog(`ER: Step 4/4 - Logging consent...`, "info");
         await logConsentOnChain(patientId, topMatch.trial_id, 0);
       }
 
-      setERLoading(false);
-      setSolanaLoading(false);
+      addLog("ER: All steps completed!", "success");
     } catch (err) {
       console.error("ER pipeline error:", err);
       setSolanaError(err instanceof Error ? err.message : "ER pipeline failed");
+      addLog(`ER: Pipeline error - ${err instanceof Error ? err.message : "Unknown"}`, "error");
+    } finally {
+      // ALWAYS clear loading states
       setERLoading(false);
       setSolanaLoading(false);
     }
@@ -667,6 +707,13 @@ export default function PipelinePage() {
     setAnonLoading(false);
     if (data) {
       setAnonResult(data);
+      // Update patientData with the anonymized ID if available
+      if (data.anonymized_data && data.anonymized_data.patient_id) {
+        setPatientData(prev => ({
+          ...prev,
+          ...data.anonymized_data
+        }));
+      }
     } else {
       setAnonError(error || "Anonymization failed");
     }
@@ -676,21 +723,58 @@ export default function PipelinePage() {
   const startProcessing = useCallback(async () => {
     const dataToMatch = patientData || (SAMPLE_PATIENT as unknown as Record<string, unknown>);
     const record = buildPatientRecord(dataToMatch);
-    const patientId =
-      (record.patient_id as string) ||
-      (dataToMatch.patient_id as string) ||
-      "ANON_MH_0024";
+    
+    // CRITICAL FIX: Ensure the patient ID is unique if the user hasn't explicitly
+    // requested it to remain stable (like after anonymization).
+    // The user explicitly requested that the ID SHOULD change after anonymization
+    // and new phantom wallet popups should appear.
+    let patientId: string;
+    
+    const existingId = (dataToMatch.patient_id as string) || 
+                       (dataToMatch.demographics as any)?.mrn ||
+                       (dataToMatch.demographics as any)?.patient_id;
+    
+    // If we have an existing ID and we want to FORCE a new on-chain transaction
+    // we should append a timestamp to make it unique, UNLESS it's already an anonymized ID
+    if (existingId && existingId.startsWith("ANON_")) {
+      // It's already anonymized, use it directly
+      patientId = existingId;
+      console.log("[Pipeline] Using anonymized patient ID:", patientId);
+    } else {
+      // Force a new ID to trigger Phantom popups and create new PDAs
+      // Extract the base part (e.g., "MH-2024" from "MH-2024-08831") and add timestamp
+      const basePart = existingId ? existingId.split("-").slice(0, 2).join("-") : "MH-2024";
+      const uniqueSuffix = Date.now().toString().slice(-5); // Last 5 digits of timestamp
+      patientId = `${basePart}-${uniqueSuffix}`;
+      console.log("[Pipeline] Generated new unique patient ID for on-chain tx:", patientId);
+    }
+    
+    // Store in ref to ensure it doesn't change during React re-renders
+    currentPatientIdRef.current = patientId;
+    
+    // Update the record with the patient ID (may be same or new)
+    (record as any).patient_id = patientId;
+    
+    // Update patientData state so the "View Full Results" link uses correct ID
+    setPatientData(record);
 
     setCurrentStep("processing");
     setIsProcessing(true);
     setProcessingLogs([]);
     
+    // Reset patient save state for new run
+    setPatientSaved(false);
+    setSaveError(null);
+    
     // Reset ER state for new run
     setERState(initialERState);
     setPatientPda(null);
 
+    // Use the ref value to ensure consistency
+    const stablePatientId = currentPatientIdRef.current;
+    
     addLog("Initializing CogniStream TrialMatch Engine...", "info");
-    addLog(`Patient: ${patientId}`, "info");
+    addLog(`Patient: ${stablePatientId}`, "info");
     
     // Show ER status if wallet connected
     if (connected && publicKey) {
@@ -710,10 +794,9 @@ export default function PipelinePage() {
     await new Promise((r) => setTimeout(r, 800));
     addLog("Rule Engine: Evaluating hard criteria (age, gender, ECOG, labs)...", "info");
 
-    const isKnownId = typeof patientId === "string" && patientId.startsWith("ANON_");
-    const matchArg = isKnownId ? patientId : record;
-
-    const { data, error } = await matchAll(matchArg, 5);
+    // CRITICAL FIX: Always send patient_data (record object), NEVER just patient_id
+    // This avoids 404 errors when patient doesn't exist in backend database
+    const { data, error } = await matchAll(record, 5);
 
     if (error) {
       addLog(`Error: ${error}`, "error");
@@ -746,6 +829,21 @@ export default function PipelinePage() {
       );
 
       setMatchResult(data);
+      
+      // Auto-save patient to backend before on-chain operations
+      // This ensures the patient appears in the dropdown for future matches
+      addLog("Saving patient to database...", "info");
+      const saveResult = await savePatient(record);
+      
+      // Use stable patient ID from ref
+      const stablePatientId = currentPatientIdRef.current!;
+      
+      if (saveResult.data?.success) {
+        addLog(`Patient ${stablePatientId} saved successfully`, "success");
+        setPatientSaved(true);
+      } else {
+        addLog(`Warning: Could not save patient - ${saveResult.error || "Unknown error"}`, "warning");
+      }
 
       // ─── MagicBlock Ephemeral Rollups Integration ─────────────────────────────
       // Run full ER pipeline: initPatient → delegatePatient → recordMatch → logConsent
@@ -758,10 +856,11 @@ export default function PipelinePage() {
         const topMatch = data.matches[0];
         
         // Run the ER pipeline and WAIT for it to complete before showing results
+        // CRITICAL: Use stable patient ID from ref to ensure consistency throughout pipeline
         try {
           await runERPipeline(
-            patientId,
-            dataToMatch,
+            stablePatientId, // Use stable ID from ref, NOT local variable
+            record, // Use the record with the unique patientId
             {
               trial_id: topMatch.trial_id,
               composite_score: topMatch.composite_score,
@@ -1219,6 +1318,45 @@ export default function PipelinePage() {
                       </div>
                     )}
                   </div>
+                </div>
+              )}
+
+              {/* ZK-TLS Data Provenance Verification */}
+              {(inputMode === "sample" || inputMode === "paste" || (inputMode === "file" && patientData)) && (
+                <div className="mt-6 max-w-3xl w-full">
+                  <VerifyWithReclaim
+                    diagnosis={
+                      (patientData?.diagnosis as any)?.primary ||
+                      (patientData?.diagnosis as string) ||
+                      SAMPLE_PATIENT.diagnosis.primary
+                    }
+                    patientAge={
+                      (patientData?.demographics as any)?.age ||
+                      SAMPLE_PATIENT.demographics.age
+                    }
+                    patientGender={
+                      (patientData?.demographics as any)?.gender ||
+                      SAMPLE_PATIENT.demographics.gender
+                    }
+                    patientCity={
+                      (patientData?.demographics as any)?.city ||
+                      SAMPLE_PATIENT.demographics.city
+                    }
+                    onVerified={handleZKVerification}
+                  />
+                  {zkProofData && (
+                    <div className="mt-3 p-3 bg-emerald-50 border-2 border-emerald-300 rounded-lg">
+                      <div className="flex items-center gap-2">
+                        <Shield className="w-4 h-4 text-emerald-600" />
+                        <span className="font-mono text-xs text-emerald-700 font-bold">
+                          ZK Verified: {zkProofData.proofHash.slice(0, 16)}...
+                        </span>
+                        <span className="ml-auto font-mono text-[10px] text-emerald-600">
+                          via {zkProofData.provider}
+                        </span>
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
 
@@ -1814,16 +1952,18 @@ export default function PipelinePage() {
                     </div>
                   )}
 
-                  {/* View Proof Button */}
-                  {solanaTxSignature && (
+                  {/* View Proof Button - show TX link if available, otherwise show Patient PDA link */}
+                  {(solanaTxSignature || patientPda) && (
                     <div className="mt-4 flex justify-center">
                       <a
-                        href={txUrl(solanaTxSignature)}
+                        href={solanaTxSignature 
+                          ? txUrl(solanaTxSignature) 
+                          : `https://solscan.io/account/${patientPda}?cluster=devnet`}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="flex items-center gap-2 bg-gradient-to-r from-[#9945FF] to-[#14F195] text-white px-6 py-2.5 font-mono text-sm font-bold uppercase hover:opacity-90 transition-opacity rounded shadow-lg"
                       >
-                        View On-Chain Proof <ExternalLink className="w-4 h-4" />
+                        {solanaTxSignature ? "View On-Chain Proof" : "View Patient Account"} <ExternalLink className="w-4 h-4" />
                       </a>
                     </div>
                   )}
@@ -1850,19 +1990,43 @@ export default function PipelinePage() {
               )}
 
               <div className="flex flex-col sm:flex-row gap-4">
-                <Link
-                  href={{
-                    pathname: '/results',
-                    query: { 
-                      patient: (patientData?.patient_id as string) || "INGESTED",
-                      data: encodeURIComponent(JSON.stringify(patientData))
+                <button 
+                  onClick={() => {
+                    // CRITICAL FIX: Store data in sessionStorage to avoid HTTP 431 (URL too large)
+                    // Large match results with 5 trials × criteria exceed browser URL limits
+                    if (typeof window !== 'undefined') {
+                      // CRITICAL FIX: Clear old storage FIRST to ensure fresh results
+                      sessionStorage.removeItem('cognistream_pipeline_results');
+                      
+                      // Use the ref to ensure we use the stable, correct patient ID
+                      const currentPatientId = currentPatientIdRef.current || (patientData?.patient_id as string) || "INGESTED";
+                      console.log('[Pipeline] Setting sessionStorage for patient:', currentPatientId);
+                      
+                      // Collect all ER transaction signatures
+                      const erTransactions = {
+                        initPatient: erState.initPatient?.signature || solanaTxSignature,
+                        delegatePatient: erState.delegatePatient?.signature,
+                        recordMatch: erState.recordMatch?.signature,
+                        logConsent: erState.logConsent?.signature,
+                      };
+                      
+                      const sessionData = {
+                        patient: currentPatientId,
+                        data: patientData,
+                        matches: matchResult,
+                        zkProof: zkProofData, // Include ZK proof data for verified badge on results page
+                        erTransactions, // Include ER transaction signatures for Solscan links
+                        topTrialId: matchResult?.matches?.[0]?.trial_id, // For voice consent fallback
+                      };
+                      sessionStorage.setItem('cognistream_pipeline_results', JSON.stringify(sessionData));
+                      console.log('[Pipeline] Stored fresh results in sessionStorage, navigating to /results');
+                      window.location.href = `/results?patient=${encodeURIComponent(sessionData.patient)}`;
                     }
                   }}
+                  className="brutal-btn brutal-btn-success px-12 py-4 text-xl flex items-center gap-3"
                 >
-                  <button className="brutal-btn brutal-btn-success px-12 py-4 text-xl flex items-center gap-3">
-                    View Full Results <ArrowRight className="w-6 h-6" strokeWidth={3} />
-                  </button>
-                </Link>
+                  View Full Results <ArrowRight className="w-6 h-6" strokeWidth={3} />
+                </button>
                 
                 {/* Save Patient Button */}
                 {patientData && (

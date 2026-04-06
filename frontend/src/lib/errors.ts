@@ -167,3 +167,14 @@ export function getUserMessage(code: number): string {
   const errorInfo = ERROR_CODES[code as keyof typeof ERROR_CODES];
   return errorInfo?.msg || `An error occurred (code: ${code})`;
 }
+
+/**
+ * Get error message by CogniStream error code
+ * Alias for getUserMessage for clarity in Toast component
+ */
+export type CogniStreamErrorCode = keyof typeof ERROR_CODES;
+
+export function getErrorMessage(code: CogniStreamErrorCode): string | null {
+  const errorInfo = ERROR_CODES[code];
+  return errorInfo?.msg || null;
+}

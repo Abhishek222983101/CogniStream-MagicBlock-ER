@@ -25,7 +25,7 @@ EXTRACT_SYSTEM_PROMPT = """You are a clinical data extraction AI. Given raw, mes
 You MUST return ONLY valid JSON with this exact schema (fill in what you can find, use null for missing fields):
 
 {
-  "patient_id": "EXTRACTED_001",
+  "patient_id": "<MRN from the document OR generate as PATIENT_XXXX>",
   "demographics": {
     "age": <integer or null>,
     "gender": "<Male/Female/Other or null>",
@@ -62,6 +62,7 @@ You MUST return ONLY valid JSON with this exact schema (fill in what you can fin
 
 Important rules:
 - Extract ALL medical information you can find
+- CRITICAL: Look for MRN (Medical Record Number) in the document and use it as patient_id (e.g., "MH-2024-08831")
 - For Indian cities, try to include lat/lng if you know them
 - If age is not directly stated but DOB is given, calculate age
 - Convert all lab values to standard units

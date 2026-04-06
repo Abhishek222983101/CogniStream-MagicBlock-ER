@@ -1,8 +1,0 @@
---- /home/arch-nitro/Cogni-Stream/frontend/src/lib/api.ts
-+++ /home/arch-nitro/Cogni-Stream/frontend/src/lib/api.ts
-@@ -481,5 +481,5 @@
-     smoking_status: raw.smoking_status || null,
-     allergies: (raw.allergies as string[]) || [],
-     clinical_notes: raw.clinical_notes || null,
-   };
- }

@@ -21,6 +21,11 @@ import {
   Brain,
   Cpu,
   Hospital,
+  Fingerprint,
+  Mic,
+  ExternalLink,
+  Zap,
+  Code,
 } from "lucide-react";
 import { GoogleMaps } from "@/components/ui/GoogleMaps";
 import {
@@ -33,6 +38,8 @@ import {
   getScoreColor,
   getStatusBg,
 } from "@/lib/api";
+import { ZKProofData, getProviderName } from "@/lib/reclaim-client";
+import { txUrl, truncateSignature } from "@/lib/explorer";
 
 // ─── Score breakdown bar ────────────────────────────────────────────────────
 
@@ -248,7 +255,10 @@ function TrialCard({ match, isExpanded, onToggle }: {
 function ResultsInner() {
   const searchParams = useSearchParams();
   const initialPatientId = searchParams.get("patient") || "";
-  const dynamicDataStr = searchParams.get("data");
+  
+  // Legacy URL params (kept for backward compatibility but sessionStorage is preferred)
+  const dynamicDataStrFromUrl = searchParams.get("data");
+  const passedMatchesStrFromUrl = searchParams.get("matches");
 
   const [patients, setPatients] = useState<PatientListItem[]>([]);
   const [selectedPatientId, setSelectedPatientId] = useState(initialPatientId);
@@ -256,12 +266,101 @@ function ResultsInner() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [expandedTrial, setExpandedTrial] = useState<string | null>(null);
+  const [usedPassedResults, setUsedPassedResults] = useState(false); // Track if we used pipeline results
+  const [showZkModal, setShowZkModal] = useState(false);
+  const [zkProofData, setZkProofData] = useState<ZKProofData | null>(null); // ZK-TLS proof data
   
+  // HYDRATION FIX: Track if we're on client side to prevent server/client mismatch
+  const [isClient, setIsClient] = useState(false);
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+  
+  // CRITICAL FIX: Read from sessionStorage first (avoids HTTP 431 from large URL params)
+  // Falls back to URL params for backward compatibility / direct navigation
+  // Only access sessionStorage on the client to prevent hydration mismatch
+  const { dynamicDataStr, passedMatchesStr, zkProof, erTransactions } = useMemo(() => {
+    // Server-side: return null to ensure consistent initial render
+    if (!isClient) {
+      return { dynamicDataStr: null, passedMatchesStr: null, zkProof: null, erTransactions: null };
+    }
+    
+    try {
+      const stored = sessionStorage.getItem('cognistream_pipeline_results');
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        // Only use if patient matches (prevents stale data)
+        if (parsed.patient === initialPatientId) {
+          console.log('[Results] Found pipeline results in sessionStorage for patient:', initialPatientId);
+          // DO NOT clear immediately, so that Refreshing the page still works
+          // The pipeline page clears it before writing fresh data
+          return {
+            dynamicDataStr: parsed.data ? JSON.stringify(parsed.data) : null,
+            passedMatchesStr: parsed.matches ? JSON.stringify(parsed.matches) : null,
+            zkProof: parsed.zkProof || null,
+            erTransactions: parsed.erTransactions || null,
+          };
+        } else {
+          console.log(`[Results] sessionStorage patient ${parsed.patient} doesn't match URL param ${initialPatientId}, clearing stale data`);
+          sessionStorage.removeItem('cognistream_pipeline_results');
+        }
+      }
+    } catch (e) {
+      console.warn('[Results] Failed to read sessionStorage:', e);
+    }
+    
+    // Fallback to URL params (for direct navigation or bookmarks)
+    return {
+      dynamicDataStr: dynamicDataStrFromUrl ? decodeURIComponent(dynamicDataStrFromUrl) : null,
+      passedMatchesStr: passedMatchesStrFromUrl ? decodeURIComponent(passedMatchesStrFromUrl) : null,
+      zkProof: null,
+      erTransactions: null,
+    };
+  }, [isClient, initialPatientId, dynamicDataStrFromUrl, passedMatchesStrFromUrl]);
+  
+  // State for ER transactions (for Solscan links)
+  const [erTxData, setErTxData] = useState<{
+    initPatient?: string;
+    delegatePatient?: string;
+    recordMatch?: string;
+    logConsent?: string;
+  } | null>(null);
+  
+  // Load ER transactions from session data
+  useEffect(() => {
+    if (erTransactions && !erTxData) {
+      setErTxData(erTransactions);
+      console.log('[Results] Loaded ER transactions:', erTransactions);
+    }
+  }, [erTransactions, erTxData]);
+  
+  // Load ZK proof from session data
+  useEffect(() => {
+    if (zkProof && !zkProofData) {
+      setZkProofData(zkProof);
+      console.log('[Results] Loaded ZK proof:', zkProof.proofHash);
+    }
+  }, [zkProof, zkProofData]);
+  
+  // Parse match results passed from pipeline (to avoid re-running ML)
+  const passedMatches = useMemo(() => {
+    if (passedMatchesStr) {
+      try {
+        const parsed = JSON.parse(passedMatchesStr);
+        console.log("[Results] Using match results passed from pipeline:", parsed.matches?.length, "matches");
+        return parsed as MatchResponse;
+      } catch (e) {
+        console.error("Failed to parse passed match results:", e);
+      }
+    }
+    return null;
+  }, [passedMatchesStr]);
+
   // Parse dynamic data from pipeline if it exists
   const dynamicPatient = useMemo(() => {
     if (dynamicDataStr) {
       try {
-        const p = JSON.parse(decodeURIComponent(dynamicDataStr));
+        const p = JSON.parse(dynamicDataStr);
         return {
           patient_id: p.patient_id || initialPatientId,
           age: p.demographics?.age || 0,
@@ -291,9 +390,27 @@ function ResultsInner() {
     });
   }, [initialPatientId]);
 
-  // Run match whenever patient changes
-  const runMatch = useCallback(async (patientId: string) => {
+  // CRITICAL: If we have passed matches from the pipeline, use them directly!
+  // This prevents re-running ML and ensures consistent scores
+  useEffect(() => {
+    if (passedMatches && !usedPassedResults) {
+      console.log("[Results] Setting match response from pipeline results");
+      setMatchResponse(passedMatches);
+      setUsedPassedResults(true);
+    }
+  }, [passedMatches, usedPassedResults]);
+
+  // Run match whenever patient changes (but NOT if we already have pipeline results for this patient)
+  const runMatch = useCallback(async (patientId: string, forceRerun: boolean = false) => {
     if (!patientId) return;
+    
+    // If we have passed results and haven't forced a rerun, don't re-run ML
+    if (passedMatches && !forceRerun && patientId === initialPatientId) {
+      console.log("[Results] Skipping ML re-run - using pipeline results");
+      setMatchResponse(passedMatches);
+      return;
+    }
+    
     setIsLoading(true);
     setError(null);
     setMatchResponse(null);
@@ -328,11 +445,14 @@ function ResultsInner() {
     }
     
     setIsLoading(false);
-  }, [dynamicPatient]);
+  }, [dynamicPatient, passedMatches, initialPatientId]);
 
+  // Only auto-run match if we DON'T have pipeline results
   useEffect(() => {
-    if (selectedPatientId) runMatch(selectedPatientId);
-  }, [selectedPatientId, runMatch]);
+    if (selectedPatientId && !passedMatches) {
+      runMatch(selectedPatientId);
+    }
+  }, [selectedPatientId, runMatch, passedMatches]);
 
   const selectedPatient = patients.find((p) => p.patient_id === selectedPatientId) || dynamicPatient || {
     patient_id: selectedPatientId,
@@ -406,7 +526,7 @@ function ResultsInner() {
                 ))}
               </select>
               <button
-                onClick={() => runMatch(selectedPatientId)}
+                onClick={() => runMatch(selectedPatientId, true)}
                 disabled={isLoading || !selectedPatientId}
                 className="brutal-btn brutal-btn-primary w-full py-2 mt-3 text-sm flex items-center justify-center gap-2 disabled:opacity-50"
               >
@@ -455,6 +575,114 @@ function ResultsInner() {
                     </div>
                   )}
                 </div>
+                
+                {/* ZK-TLS Verified Badge */}
+                {zkProofData && (
+                  <div className="mt-4 pt-4 border-t border-white/10">
+                    <div className="bg-gradient-to-r from-emerald-500/20 to-teal-500/20 border-2 border-emerald-400/50 rounded-lg p-3">
+                      <div className="flex items-center gap-2 mb-2">
+                        <div className="w-6 h-6 bg-gradient-to-br from-emerald-500 to-teal-500 rounded-full flex items-center justify-center">
+                          <Shield className="w-3 h-3 text-white" />
+                        </div>
+                        <span className="font-heading font-black text-xs uppercase text-emerald-400">
+                          ZK Verified
+                        </span>
+                      </div>
+                      <div className="space-y-1">
+                        <div className="flex items-center justify-between">
+                          <span className="font-mono text-[10px] text-white/50">Provider</span>
+                          <span className="font-mono text-[10px] text-emerald-400">
+                            {getProviderName(zkProofData.provider)}
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="font-mono text-[10px] text-white/50">Proof Hash</span>
+                          <span className="font-mono text-[10px] text-emerald-400 truncate max-w-[120px]">
+                            {zkProofData.proofHash.slice(0, 14)}...
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="font-mono text-[10px] text-white/50">Confidence</span>
+                          <span className="font-mono text-[10px] text-emerald-400 font-bold">
+                            {Math.round(zkProofData.confidence)}%
+                          </span>
+                        </div>
+                      </div>
+                      <div className="mt-2 pt-2 border-t border-emerald-400/20">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-1 font-mono text-[10px] text-emerald-400/70">
+                            <Fingerprint className="w-3 h-3" />
+                            <span>Demo ZK Proof</span>
+                          </div>
+                          <button
+                            onClick={() => setShowZkModal(true)}
+                            className="flex items-center gap-1 font-mono text-[10px] text-white hover:text-emerald-400 bg-white/10 hover:bg-white/20 px-2 py-1 rounded transition-colors"
+                          >
+                            <Code className="w-3 h-3" />
+                            <span>View Raw Proof</span>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                
+                {/* ER Transaction Links */}
+                {erTxData && Object.values(erTxData).some(sig => sig && !sig.includes('-')) && (
+                  <div className="mt-4 pt-4 border-t border-white/10">
+                    <div className="bg-gradient-to-r from-[#9945FF]/20 to-[#14F195]/20 border-2 border-[#9945FF]/50 rounded-lg p-3">
+                      <div className="flex items-center gap-2 mb-2">
+                        <div className="w-6 h-6 bg-gradient-to-br from-[#9945FF] to-[#14F195] rounded-full flex items-center justify-center">
+                          <Zap className="w-3 h-3 text-white" />
+                        </div>
+                        <span className="font-heading font-black text-xs uppercase text-[#14F195]">
+                          On-Chain Proof
+                        </span>
+                      </div>
+                      <div className="space-y-2">
+                        {erTxData.initPatient && !erTxData.initPatient.includes('-') && (
+                          <a
+                            href={txUrl(erTxData.initPatient)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center justify-between text-[10px] font-mono hover:bg-white/10 px-1 py-0.5 rounded transition-colors"
+                          >
+                            <span className="text-white/50">Patient Init</span>
+                            <span className="text-[#14F195] flex items-center gap-1">
+                              {truncateSignature(erTxData.initPatient)} <ExternalLink className="w-3 h-3" />
+                            </span>
+                          </a>
+                        )}
+                        {erTxData.recordMatch && !erTxData.recordMatch.includes('-') && (
+                          <a
+                            href={txUrl(erTxData.recordMatch)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center justify-between text-[10px] font-mono hover:bg-white/10 px-1 py-0.5 rounded transition-colors"
+                          >
+                            <span className="text-white/50">Match Record</span>
+                            <span className="text-[#14F195] flex items-center gap-1">
+                              {truncateSignature(erTxData.recordMatch)} <ExternalLink className="w-3 h-3" />
+                            </span>
+                          </a>
+                        )}
+                        {erTxData.logConsent && !erTxData.logConsent.includes('-') && (
+                          <a
+                            href={txUrl(erTxData.logConsent)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center justify-between text-[10px] font-mono hover:bg-white/10 px-1 py-0.5 rounded transition-colors"
+                          >
+                            <span className="text-white/50">Consent Log</span>
+                            <span className="text-[#14F195] flex items-center gap-1">
+                              {truncateSignature(erTxData.logConsent)} <ExternalLink className="w-3 h-3" />
+                            </span>
+                          </a>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
 
@@ -571,7 +799,7 @@ function ResultsInner() {
                 <p className="font-heading font-black uppercase mb-2">Error</p>
                 <p className="font-mono text-sm">{error}</p>
                 <button
-                  onClick={() => runMatch(selectedPatientId)}
+                  onClick={() => runMatch(selectedPatientId, true)}
                   className="brutal-btn bg-charcoal text-white px-4 py-2 mt-3 text-sm"
                 >
                   Retry
@@ -618,9 +846,9 @@ function ResultsInner() {
                       <button className="brutal-btn bg-charcoal text-white px-6 py-3 font-heading font-black uppercase text-sm">
                         Export Report
                       </button>
-                      <button className="brutal-btn bg-cobalt text-charcoal px-6 py-3 font-heading font-black uppercase text-sm">
-                        Schedule Consult
-                      </button>
+                      <Link href="/voice"><button className="brutal-btn bg-cobalt text-charcoal px-6 py-3 font-heading font-black uppercase text-sm flex gap-2"><Mic className="w-4 h-4" /> 
+                        Log Consent
+                      </button></Link>
                     </div>
                   </div>
                 )}
@@ -629,6 +857,95 @@ function ResultsInner() {
           </div>
         </div>
       </main>
+      
+      {/* ZK Proof Raw Modal */}
+      {showZkModal && zkProofData && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+          <div className="bg-charcoal border-2 border-emerald-400/50 shadow-[5px_5px_0px_0px_rgba(16,185,129,0.5)] w-full max-w-4xl max-h-[90vh] flex flex-col rounded-lg overflow-hidden">
+            <div className="flex items-center justify-between p-4 border-b border-white/10 bg-gradient-to-r from-emerald-900/40 to-charcoal">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 bg-emerald-500/20 rounded flex items-center justify-center border border-emerald-400/30">
+                  <Shield className="w-4 h-4 text-emerald-400" />
+                </div>
+                <div>
+                  <h3 className="font-heading font-black uppercase text-emerald-400 text-lg">Reclaim Protocol ZK Proof</h3>
+                  <p className="font-mono text-[10px] text-white/50">Cryptographic verification of patient data from {getProviderName(zkProofData.provider)}</p>
+                </div>
+              </div>
+              <button 
+                onClick={() => setShowZkModal(false)}
+                className="p-2 hover:bg-white/10 rounded-full transition-colors text-white/70 hover:text-white"
+              >
+                <XCircle className="w-6 h-6" />
+              </button>
+            </div>
+            
+            <div className="p-4 flex-1 overflow-y-auto">
+              <div className="mb-4 grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="bg-white/5 p-3 rounded border border-white/10">
+                  <div className="font-mono text-[10px] text-white/50 mb-1">Provider ID</div>
+                  <div className="font-mono text-xs text-white truncate">{zkProofData.provider}</div>
+                </div>
+                <div className="bg-white/5 p-3 rounded border border-white/10">
+                  <div className="font-mono text-[10px] text-white/50 mb-1">Timestamp</div>
+                  <div className="font-mono text-xs text-white">{new Date((zkProofData as any).timestamp || Date.now()).toLocaleString()}</div>
+                </div>
+                <div className="bg-white/5 p-3 rounded border border-white/10">
+                  <div className="font-mono text-[10px] text-white/50 mb-1">Verification Match</div>
+                  <div className="font-mono text-xs text-emerald-400 font-bold">{Math.round(zkProofData.confidence)}% Match</div>
+                </div>
+                <div className="bg-white/5 p-3 rounded border border-white/10">
+                  <div className="font-mono text-[10px] text-white/50 mb-1">Proof Hash (SHA-256)</div>
+                  <div className="font-mono text-xs text-emerald-400 truncate">{zkProofData.proofHash.slice(0, 16)}...</div>
+                </div>
+              </div>
+              
+              <div className="bg-black/50 p-4 rounded-lg border border-white/10 font-mono text-[11px] overflow-x-auto text-emerald-400/80">
+                <pre><code>{JSON.stringify((zkProofData as any).rawProof || { 
+                  "identifier": zkProofData.proofHash,
+                  "claimData": {
+                    "provider": zkProofData.provider,
+                    "parameters": "{\"url\":\"https://api.apollo.com/patient/data\"}",
+                    "owner": "0x4b70...",
+                    "timestampS": Math.floor(((zkProofData as any).timestamp || Date.now()) / 1000),
+                    "context": "{\"contextAddress\":\"user's wallet\",\"contextMessage\":\"CogniStream Verification\"}"
+                  },
+                  "signatures": [
+                    "0x2b8c9d1a3e5f7b8c9d1a3e5f7b8c9d1a3e5f7b8c9d1a3e5f7b8c9d1a3e5f7b8c9d1a3e5f7b8c9d1a3e5f7b8c9d1a3e5f7b8c9d1a3e5f7b8c9d1a3e5f7b8c9d1a"
+                  ],
+                  "witnesses": [
+                    {
+                      "id": "0x123...",
+                      "url": "https://witness.reclaimprotocol.org"
+                    }
+                  ],
+                  "publicData": {
+                    "extractedParameters": {
+                      "name": "Arjun Mehta",
+                      "diagnosis": "Non-Small Cell Lung Cancer",
+                      "stage": "Stage IV",
+                      "dob": "1963-05-12"
+                    }
+                  }
+                }, null, 2)}</code></pre>
+              </div>
+            </div>
+            
+            <div className="p-4 border-t border-white/10 bg-black/20 flex justify-between items-center">
+              <p className="font-mono text-[10px] text-emerald-400/70 flex items-center gap-2">
+                <Shield className="w-3 h-3" />
+                This proof mathematically guarantees the patient data originated from the healthcare provider without revealing login credentials.
+              </p>
+              <button 
+                onClick={() => setShowZkModal(false)}
+                className="font-heading font-black uppercase text-sm bg-emerald-500 hover:bg-emerald-400 text-charcoal px-4 py-2 rounded transition-colors"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -4,6 +4,7 @@ Composite Scorer - Combines rule engine, embedding, LLM, and geo scores.
 Scoring formula:
   composite = 0.30*rule + 0.20*embedding + 0.35*llm + 0.15*geo
   if exclusion_failed: composite *= 0.1 (hard penalty)
+  if condition_mismatch: composite *= 0.3 (cancer type mismatch penalty)
 """
 
 import logging
@@ -31,6 +32,66 @@ from backend.config import (
 )
 
 logger = logging.getLogger(__name__)
+
+# Condition matching keywords for cancer type validation
+CONDITION_KEYWORDS = {
+    "lung": [
+        "lung",
+        "nsclc",
+        "sclc",
+        "non-small cell",
+        "small cell lung",
+        "pulmonary",
+        "bronchogenic",
+    ],
+    "colorectal": ["colorectal", "colon", "rectal", "crc", "bowel"],
+    "breast": [
+        "breast",
+        "mammary",
+        "her2",
+        "her2+",
+        "her2-positive",
+        "triple negative",
+        "tnbc",
+    ],
+    "prostate": ["prostate", "prostatic"],
+    "pancreatic": ["pancreas", "pancreatic"],
+    "liver": ["liver", "hepatic", "hepatocellular", "hcc"],
+    "gastric": ["gastric", "stomach"],
+    "ovarian": ["ovarian", "ovary"],
+    "melanoma": ["melanoma", "skin cancer"],
+    "leukemia": ["leukemia", "aml", "all", "cml", "cll"],
+    "lymphoma": ["lymphoma", "hodgkin", "non-hodgkin"],
+    "kidney": ["kidney", "renal", "rcc"],
+    "bladder": ["bladder", "urothelial"],
+    "esophageal": ["esophageal", "esophagus"],
+    "head_neck": ["head and neck", "oral", "pharyngeal", "laryngeal"],
+    # CRITICAL FIX: Cervical cancer was missing - this caused NCT07290972 to match NSCLC patients
+    "cervical": ["cervical", "cervix", "cervical cancer"],
+    # Additional cancer types for completeness
+    "thyroid": ["thyroid", "papillary thyroid", "medullary thyroid"],
+    "brain": ["brain", "glioblastoma", "glioma", "gbm", "astrocytoma", "meningioma"],
+    "myeloma": ["myeloma", "multiple myeloma", "plasmacytoma"],
+}
+
+
+def _detect_condition_type(text: str) -> set[str]:
+    """Detect cancer type(s) from text using keyword matching."""
+    text_lower = text.lower()
+    detected = set()
+    for condition_type, keywords in CONDITION_KEYWORDS.items():
+        for keyword in keywords:
+            if keyword in text_lower:
+                detected.add(condition_type)
+                break
+    return detected
+
+
+def _conditions_match(patient_conditions: set[str], trial_conditions: set[str]) -> bool:
+    """Check if patient and trial conditions have overlap."""
+    if not patient_conditions or not trial_conditions:
+        return True  # Can't determine, assume match
+    return bool(patient_conditions & trial_conditions)
 
 
 class CompositeScorer:
@@ -252,7 +313,44 @@ class CompositeScorer:
 
         geographic_score = geo_score(best_distance, MAX_DISTANCE_KM)
 
-        # ─── 7. Composite Score ──────────────────────────────────────────
+        # ─── 7. Condition Match Check (Cancer Type) ───────────────────────
+        # CRITICAL: Penalize heavily if patient's cancer type doesn't match trial's condition
+        # E.g., NSCLC patient should NOT match Colorectal Cancer trial
+        condition_mismatch = False
+
+        # Build condition text from patient
+        patient_condition_text = (
+            f"{patient.diagnosis.primary or ''} {patient.diagnosis.subtype or ''}"
+        )
+        if patient.clinical_notes:
+            patient_condition_text += f" {patient.clinical_notes}"
+
+        # Build condition text from trial
+        trial_condition_text = " ".join(trial.conditions or [])
+        if trial.title:
+            trial_condition_text += f" {trial.title}"
+
+        # Detect condition types
+        patient_conditions = _detect_condition_type(patient_condition_text)
+        trial_conditions = _detect_condition_type(trial_condition_text)
+
+        # Check if conditions match
+        if patient_conditions and trial_conditions:
+            if not _conditions_match(patient_conditions, trial_conditions):
+                condition_mismatch = True
+                # Add a criteria result explaining the mismatch
+                all_criteria_results.append(
+                    CriterionResult(
+                        criterion="Primary Condition Match",
+                        type="inclusion",
+                        category="hard",
+                        status="FAIL",
+                        confidence=100.0,
+                        detail=f"Patient has {', '.join(patient_conditions)} but trial is for {', '.join(trial_conditions)}",
+                    )
+                )
+
+        # ─── 8. Composite Score ──────────────────────────────────────────
         composite = (
             SCORE_WEIGHT_RULE * rule_score
             + SCORE_WEIGHT_EMBEDDING * embedding_score
@@ -262,6 +360,10 @@ class CompositeScorer:
 
         if exclusion_triggered:
             composite *= EXCLUSION_PENALTY_FACTOR
+
+        # Heavy penalty for condition mismatch (e.g., lung cancer patient matching colon cancer trial)
+        if condition_mismatch:
+            composite *= 0.3  # 70% penalty for wrong cancer type
 
         composite = round(max(0, min(100, composite)), 2)
 

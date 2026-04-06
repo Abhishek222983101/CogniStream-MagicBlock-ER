@@ -1,7 +1,16 @@
+# Environment files (contain secrets)
 .env
+.env.local
+backend/.env
+frontend/.env.local
+
+# Python
 __pycache__/
 *.pyc
 .venv/
+venv/
+
+# ML Models and Training
 models/
 wandb/
 *.safetensors
@@ -12,7 +21,6 @@ training.log
 # Frontend
 frontend/node_modules/
 frontend/.next/
-frontend/.env.local
 frontend/out/
 frontend/.vercel/
 
@@ -23,3 +31,16 @@ target/deploy/
 target/sbpf-solana-solana/
 target/.rustc_info.json
 *.so
+
+# Merge artifacts
+*.orig
+*.patch
+*.rej
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db

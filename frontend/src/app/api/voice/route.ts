@@ -1,6 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { ragEngine } from "@/lib/ragEngine";
+import { 
+  detectConsentIntent, 
+  ConsentType, 
+  getConsentTypeName,
+  formatConsentConfirmation 
+} from "@/lib/voice-consent";
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 const GROQ_API_KEY = process.env.GROQ_API_KEY;
@@ -10,6 +16,18 @@ interface VoiceRequest {
   message: string;
   generateAudio?: boolean;
   voiceId?: string;
+  currentTrialId?: string; // Current trial being discussed
+  patientId?: string; // Patient ID for consent logging
+}
+
+interface ConsentIntentResponse {
+  detected: boolean;
+  consentType?: number;
+  consentTypeName?: string;
+  trialId?: string;
+  confidence: number;
+  matchedPattern?: string;
+  requiresWalletAction: boolean;
 }
 
 let ragInitialized = false;
@@ -76,7 +94,13 @@ export async function POST(req: NextRequest) {
     }
 
     const body: VoiceRequest = await req.json();
-    const { message, generateAudio = false, voiceId = "21m00Tcm4TlvDq8ikWAM" } = body;
+    const { 
+      message, 
+      generateAudio = false, 
+      voiceId = "21m00Tcm4TlvDq8ikWAM",
+      currentTrialId,
+      patientId,
+    } = body;
 
     if (!message?.trim()) {
       return NextResponse.json(
@@ -87,6 +111,30 @@ export async function POST(req: NextRequest) {
 
     console.log("Voice API: Processing message:", message);
 
+    // ─── CONSENT INTENT DETECTION ────────────────────────────────────────────
+    // Check if the user is expressing consent intent
+    const consentIntent = detectConsentIntent(message, currentTrialId);
+    
+    let consentIntentResponse: ConsentIntentResponse | null = null;
+    
+    if (consentIntent.detected && consentIntent.consentType !== undefined) {
+      console.log("Voice API: Consent intent detected!", {
+        type: getConsentTypeName(consentIntent.consentType),
+        trialId: consentIntent.trialId,
+        confidence: consentIntent.confidence,
+      });
+      
+      consentIntentResponse = {
+        detected: true,
+        consentType: consentIntent.consentType,
+        consentTypeName: getConsentTypeName(consentIntent.consentType),
+        trialId: consentIntent.trialId,
+        confidence: consentIntent.confidence,
+        matchedPattern: consentIntent.matchedPattern,
+        requiresWalletAction: true,
+      };
+    }
+
     await ensureRAGInit();
 
     // Get context from RAG engine
@@ -95,8 +143,27 @@ export async function POST(req: NextRequest) {
 
     console.log("Voice API: RAG retrieved", retrieved.length, "chunks");
 
-    // Special prompt for voice assistant - shorter, more conversational
-    const systemPrompt = `You are TrialMatch AI, a friendly voice assistant helping people find clinical trials in India.
+    // Special prompt for voice assistant - includes consent awareness
+    let systemPrompt: string;
+    
+    if (consentIntentResponse?.detected) {
+      // User is giving consent - respond appropriately
+      systemPrompt = `You are TrialMatch AI, a friendly voice assistant helping people find clinical trials in India.
+
+The user just expressed consent intent: "${consentIntent.matchedPattern}"
+Consent Type: ${consentIntentResponse.consentTypeName}
+${consentIntent.trialId ? `Trial ID: ${consentIntent.trialId}` : 'No specific trial mentioned'}
+
+IMPORTANT: Acknowledge their consent request warmly and let them know their consent will be recorded on-chain.
+Keep your response SHORT (1-2 sentences). Be encouraging but professional.
+Mention that this is being recorded on the Solana blockchain using MagicBlock Ephemeral Rollups for instant, gasless verification.
+
+User said: "${message}"
+
+Respond:`;
+    } else {
+      // Normal conversation
+      systemPrompt = `You are TrialMatch AI, a friendly voice assistant helping people find clinical trials in India.
 
 IMPORTANT: Keep your responses SHORT and CONVERSATIONAL - suitable for voice output (2-4 sentences max).
 Speak naturally as if having a conversation. Avoid bullet points and long lists.
@@ -105,12 +172,17 @@ Focus on the most important information first.
 If you find matching trials, mention 1-2 top ones with their city locations.
 If asked about eligibility, give a quick yes/no assessment with brief reason.
 
+If the user seems interested in a trial, you can guide them to say phrases like:
+- "I want to participate" or "Contact me about this trial" to log consent
+- "Show me the results" to view detailed matching
+
 Clinical Data Context:
 ${context}
 
 User said: "${message}"
 
 Respond conversationally and concisely:`;
+    }
 
     // Try Gemini first, fallback to Groq
     let response: string;
@@ -177,6 +249,9 @@ Respond conversationally and concisely:`;
       audio: audioBase64,
       sources,
       hasAudio: !!audioBase64,
+      usedModel,
+      // Consent intent data for frontend to handle wallet interaction
+      consentIntent: consentIntentResponse,
     });
 
   } catch (error: any) {
@@ -195,6 +270,12 @@ export async function GET() {
     elevenlabs: !!ELEVENLABS_API_KEY,
     gemini: !!GEMINI_API_KEY,
     groq: !!GROQ_API_KEY,
-    features: ["speech-to-text", "text-to-speech", "clinical-rag"],
+    features: [
+      "speech-to-text", 
+      "text-to-speech", 
+      "clinical-rag",
+      "consent-detection",
+      "magicblock-er-integration",
+    ],
   });
 }

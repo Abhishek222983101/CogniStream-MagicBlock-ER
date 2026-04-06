@@ -2032,6 +2032,190 @@
     "diagnosis": {
       "primary": "Non-small cell lung cancer",
       "subtype": "adenocarcinoma",
+      "stage": "IV",
+      "icd10": null,
+      "biomarkers": {
+        "KRAS": "G12C mut+",
+        "PDL1": "TPS 15%",
+        "EGFR": "wild-type",
+        "ALK": "neg"
+      }
+    },
+    "medical_history": [
+      "Hypertension",
+      "Hyperlipidemia"
+    ],
+    "medications": [
+      "amlodipine 5mg",
+      "atorvastatin 20mg"
+    ],
+    "prior_treatments": [],
+    "lab_values": {
+      "hemoglobin": 11.8,
+      "wbc": 6.8,
+      "platelets": 195.0,
+      "creatinine": 0.9,
+      "bilirubin": 0.8,
+      "alt": 32.0,
+      "ast": 28.0
+    },
+    "ecog_status": 1,
+    "smoking_status": "Former",
+    "allergies": [],
+    "clinical_notes": "Newly diagnosed Stage IV NSCLC adenocarcinoma with KRAS G12C mutation. Former smoker with 30 pack-years. Candidate for clinical trial enrollment."
+  },
+  {
+    "patient_id": "MH-2024-08833",
+    "demographics": {
+      "age": 61,
+      "gender": "Male",
+      "name": "Rajesh Kumar Verma",
+      "city": "Mumbai",
+      "state": "Maharashtra",
+      "lat": 19.076,
+      "lng": 72.8777
+    },
+    "diagnosis": {
+      "primary": "Non-small cell lung cancer",
+      "subtype": "adenocarcinoma",
+      "stage": "Stage IV",
+      "icd10": null,
+      "biomarkers": {
+        "KRAS": "G12C mut+",
+        "PDL1": "TPS 15%",
+        "EGFR": "wild-type",
+        "ALK": "negative"
+      }
+    },
+    "medical_history": [
+      "Hypertension",
+      "Hyperlipidemia"
+    ],
+    "medications": [
+      "amlodipine 5mg",
+      "atorvastatin 20mg"
+    ],
+    "prior_treatments": [],
+    "lab_values": {
+      "hemoglobin": 11.8,
+      "wbc": 6.8,
+      "platelets": 195.0,
+      "creatinine": 0.9,
+      "bilirubin": 0.8,
+      "alt": 32.0,
+      "ast": 28.0
+    },
+    "ecog_status": 1,
+    "smoking_status": "Former",
+    "allergies": [],
+    "clinical_notes": "Newly diagnosed Stage IV NSCLC adenocarcinoma with KRAS G12C mutation. Former smoker with 30 pack-years. Candidate for clinical trial enrollment."
+  },
+  {
+    "patient_id": "MH-2024-22236",
+    "demographics": {
+      "age": 61,
+      "gender": "Male",
+      "name": "Rajesh Kumar Verma",
+      "city": "Mumbai",
+      "state": "Maharashtra",
+      "lat": 19.076,
+      "lng": 72.8777
+    },
+    "diagnosis": {
+      "primary": "Non-small cell lung cancer",
+      "subtype": "adenocarcinoma",
+      "stage": "IV",
+      "icd10": null,
+      "biomarkers": {
+        "KRAS": "G12C mut+",
+        "PDL1": "TPS 15%",
+        "EGFR": "wild-type",
+        "ALK": "neg"
+      }
+    },
+    "medical_history": [
+      "Hypertension",
+      "Hyperlipidemia"
+    ],
+    "medications": [
+      "amlodipine 5mg",
+      "atorvastatin 20mg"
+    ],
+    "prior_treatments": [],
+    "lab_values": {
+      "hemoglobin": 11.8,
+      "wbc": 6.8,
+      "platelets": 195.0,
+      "creatinine": 0.9,
+      "bilirubin": 0.8,
+      "alt": 32.0,
+      "ast": 28.0
+    },
+    "ecog_status": 1,
+    "smoking_status": "Former",
+    "allergies": [],
+    "clinical_notes": "Newly diagnosed Stage IV NSCLC adenocarcinoma with KRAS G12C mutation. Former smoker with 30 pack-years. Candidate for clinical trial enrollment."
+  },
+  {
+    "patient_id": "MH-2024-78356",
+    "demographics": {
+      "age": 61,
+      "gender": "Male",
+      "name": "Rajesh Kumar Verma",
+      "city": "Mumbai",
+      "state": "Maharashtra",
+      "lat": 19.076,
+      "lng": 72.8777
+    },
+    "diagnosis": {
+      "primary": "Non-small cell lung cancer",
+      "subtype": "adenocarcinoma",
+      "stage": "IV",
+      "icd10": null,
+      "biomarkers": {
+        "KRAS": "G12C mut+",
+        "PDL1": "TPS 15%",
+        "EGFR": "wild-type",
+        "ALK": "neg"
+      }
+    },
+    "medical_history": [
+      "Hypertension",
+      "Hyperlipidemia"
+    ],
+    "medications": [
+      "amlodipine 5mg",
+      "atorvastatin 20mg"
+    ],
+    "prior_treatments": [],
+    "lab_values": {
+      "hemoglobin": 11.8,
+      "wbc": 6.8,
+      "platelets": 195.0,
+      "creatinine": 0.9,
+      "bilirubin": 0.8,
+      "alt": 32.0,
+      "ast": 28.0
+    },
+    "ecog_status": 1,
+    "smoking_status": "Former",
+    "allergies": [],
+    "clinical_notes": "Newly diagnosed Stage IV NSCLC adenocarcinoma with KRAS G12C mutation. Former smoker with 30 pack-years. Candidate for clinical trial enrollment."
+  },
+  {
+    "patient_id": "MH-2024-08414",
+    "demographics": {
+      "age": 61,
+      "gender": "Male",
+      "name": "Rajesh Kumar Verma",
+      "city": "Mumbai",
+      "state": "Maharashtra",
+      "lat": 19.076,
+      "lng": 72.8777
+    },
+    "diagnosis": {
+      "primary": "Non-small cell lung cancer",
+      "subtype": "adenocarcinoma",
       "stage": "Stage IV",
       "icd10": null,
       "biomarkers": {
@@ -2063,5 +2247,502 @@
     "smoking_status": "Former",
     "allergies": [],
     "clinical_notes": "Newly diagnosed Stage IV NSCLC adenocarcinoma with KRAS G12C mutation. Former smoker with 30 pack-years. Candidate for clinical trial enrollment."
+  },
+  {
+    "patient_id": "MH-2024-84993",
+    "demographics": {
+      "age": 61,
+      "gender": "Male",
+      "name": "Rajesh Kumar Verma",
+      "city": "Mumbai",
+      "state": "Maharashtra",
+      "lat": 19.076,
+      "lng": 72.8777
+    },
+    "diagnosis": {
+      "primary": "Non-small cell lung cancer",
+      "subtype": "adenocarcinoma",
+      "stage": "Stage IV",
+      "icd10": null,
+      "biomarkers": {
+        "KRAS": "G12C mut+",
+        "PDL1": "TPS 15%",
+        "EGFR": "wild-type",
+        "ALK": "neg"
+      }
+    },
+    "medical_history": [
+      "Hypertension",
+      "Hyperlipidemia"
+    ],
+    "medications": [
+      "amlodipine 5mg",
+      "atorvastatin 20mg"
+    ],
+    "prior_treatments": [],
+    "lab_values": {
+      "hemoglobin": 11.8,
+      "wbc": 6.8,
+      "platelets": 195.0,
+      "creatinine": 0.9,
+      "bilirubin": 0.8,
+      "alt": 32.0,
+      "ast": 28.0
+    },
+    "ecog_status": 1,
+    "smoking_status": "Former",
+    "allergies": [],
+    "clinical_notes": "Newly diagnosed Stage IV NSCLC adenocarcinoma with KRAS G12C mutation. Former smoker with 30 pack-years. Candidate for clinical trial enrollment."
+  },
+  {
+    "patient_id": "MH-2024-74993",
+    "demographics": {
+      "age": 61,
+      "gender": "Male",
+      "name": "Rajesh Kumar Verma",
+      "city": "Mumbai",
+      "state": "Maharashtra",
+      "lat": 19.076,
+      "lng": 72.8777
+    },
+    "diagnosis": {
+      "primary": "Non-small cell lung cancer",
+      "subtype": "adenocarcinoma",
+      "stage": "Stage IV",
+      "icd10": null,
+      "biomarkers": {
+        "KRAS": "G12C mut+",
+        "PDL1": "TPS 15%",
+        "EGFR": "wild-type",
+        "ALK": "neg"
+      }
+    },
+    "medical_history": [
+      "Hypertension",
+      "Hyperlipidemia"
+    ],
+    "medications": [
+      "amlodipine 5mg",
+      "atorvastatin 20mg"
+    ],
+    "prior_treatments": [],
+    "lab_values": {
+      "hemoglobin": 11.8,
+      "wbc": 6.8,
+      "platelets": 195.0,
+      "creatinine": 0.9,
+      "bilirubin": 0.8,
+      "alt": 32.0,
+      "ast": 28.0
+    },
+    "ecog_status": 1,
+    "smoking_status": "Former",
+    "allergies": [],
+    "clinical_notes": "Newly diagnosed Stage IV NSCLC adenocarcinoma with KRAS G12C mutation. Former smoker with 30 pack-years. Candidate for clinical trial enrollment."
+  },
+  {
+    "patient_id": "ANON_E50CCB29",
+    "demographics": {
+      "age": 61,
+      "gender": "Male",
+      "name": "[PERSON_D5AC4B]",
+      "city": "Mumbai",
+      "state": "Maharashtra",
+      "lat": 19.076,
+      "lng": 72.8777
+    },
+    "diagnosis": {
+      "primary": "Non-small cell lung cancer",
+      "subtype": "adenocarcinoma",
+      "stage": "IV",
+      "icd10": null,
+      "biomarkers": {
+        "KRAS": "G12C mut+",
+        "PDL1": "TPS 15%",
+        "EGFR": "wild-type",
+        "ALK": "neg"
+      }
+    },
+    "medical_history": [
+      "Hypertension",
+      "Hyperlipidemia"
+    ],
+    "medications": [
+      "amlodipine 5mg",
+      "atorvastatin 20mg"
+    ],
+    "prior_treatments": [],
+    "lab_values": {
+      "hemoglobin": 11.8,
+      "wbc": 6.8,
+      "platelets": 195.0,
+      "creatinine": 0.9,
+      "bilirubin": 0.8,
+      "alt": 32.0,
+      "ast": 28.0
+    },
+    "ecog_status": 1,
+    "smoking_status": "Former",
+    "allergies": [],
+    "clinical_notes": "Newly diagnosed Stage IV NSCLC adenocarcinoma with KRAS G12C mutation. Former smoker with 30 pack-years. Candidate for clinical trial enrollment."
+  },
+  {
+    "patient_id": "ANON_0B4E037B",
+    "demographics": {
+      "age": 61,
+      "gender": "Male",
+      "name": "[PERSON_D5AC4B]",
+      "city": "Mumbai",
+      "state": "Maharashtra",
+      "lat": 19.076,
+      "lng": 72.8777
+    },
+    "diagnosis": {
+      "primary": "Non-small cell lung cancer",
+      "subtype": "adenocarcinoma",
+      "stage": "IV",
+      "icd10": null,
+      "biomarkers": {
+        "KRAS": "G12C mut+",
+        "PDL1": "TPS 15%",
+        "EGFR": "wild-type",
+        "ALK": "neg"
+      }
+    },
+    "medical_history": [
+      "Hypertension",
+      "Hyperlipidemia"
+    ],
+    "medications": [
+      "amlodipine 5mg",
+      "atorvastatin 20mg"
+    ],
+    "prior_treatments": [],
+    "lab_values": {
+      "hemoglobin": 11.8,
+      "wbc": 6.8,
+      "platelets": 195.0,
+      "creatinine": 0.9,
+      "bilirubin": 0.8,
+      "alt": 32.0,
+      "ast": 28.0
+    },
+    "ecog_status": 1,
+    "smoking_status": "Former",
+    "allergies": [],
+    "clinical_notes": "Newly diagnosed Stage IV NSCLC adenocarcinoma with KRAS G12C mutation. Former smoker with 30 pack-years. Candidate for clinical trial enrollment."
+  },
+  {
+    "patient_id": "ANON_156D52BC",
+    "demographics": {
+      "age": 61,
+      "gender": "Male",
+      "name": "[PERSON_D5AC4B]",
+      "city": "Mumbai",
+      "state": "Maharashtra",
+      "lat": 19.076,
+      "lng": 72.8777
+    },
+    "diagnosis": {
+      "primary": "Non-small cell lung cancer",
+      "subtype": "adenocarcinoma",
+      "stage": "IV",
+      "icd10": null,
+      "biomarkers": {
+        "KRAS": "G12C mut+",
+        "PDL1": "TPS 15%",
+        "EGFR": "wild-type",
+        "ALK": "neg"
+      }
+    },
+    "medical_history": [
+      "Hypertension",
+      "Hyperlipidemia"
+    ],
+    "medications": [
+      "amlodipine 5mg",
+      "atorvastatin 20mg"
+    ],
+    "prior_treatments": [],
+    "lab_values": {
+      "hemoglobin": 11.8,
+      "wbc": 6.8,
+      "platelets": 195.0,
+      "creatinine": 0.9,
+      "bilirubin": 0.8,
+      "alt": 32.0,
+      "ast": 28.0
+    },
+    "ecog_status": 1,
+    "smoking_status": "Former",
+    "allergies": [],
+    "clinical_notes": "Newly diagnosed Stage IV NSCLC adenocarcinoma with KRAS G12C mutation. Former smoker with 30 pack-years. Candidate for clinical trial enrollment."
+  },
+  {
+    "patient_id": "ANON_6F592DD9",
+    "demographics": {
+      "age": 50,
+      "gender": "Female",
+      "name": "[PERSON_21C1EE]",
+      "city": "Mumbai",
+      "state": "Maharashtra",
+      "lat": 19.076,
+      "lng": 72.8777
+    },
+    "diagnosis": {
+      "primary": "Invasive ductal carcinoma",
+      "subtype": "Triple-negative breast cancer (TNBC)",
+      "stage": "Stage IIIc",
+      "icd10": null,
+      "biomarkers": {
+        "ER": "negative",
+        "PR": "negative",
+        "HER2": "negative",
+        "BRCA1": "mutation positive"
+      }
+    },
+    "medical_history": [
+      "Hypothyroidism"
+    ],
+    "medications": [
+      "levothyroxine 50mcg"
+    ],
+    "prior_treatments": [],
+    "lab_values": {
+      "hemoglobin": 12.1,
+      "wbc": 5.4,
+      "platelets": 210.0,
+      "creatinine": 0.8,
+      "bilirubin": 0.6,
+      "alt": 22.0,
+      "ast": 20.0
+    },
+    "ecog_status": 0,
+    "smoking_status": "Never",
+    "allergies": [
+      "Penicillin"
+    ],
+    "clinical_notes": "Patient presents with triple-negative breast cancer (TNBC) Stage IIIc and germline BRCA1 mutation. High risk for recurrence; candidate for PARP inhibitor clinical trials or novel immunotherapy plus chemotherapy regimens."
+  },
+  {
+    "patient_id": "ANON_87332DFA",
+    "demographics": {
+      "age": 67,
+      "gender": "Male",
+      "name": "[PERSON_42D4A5]",
+      "city": "Mumbai",
+      "state": "Maharashtra",
+      "lat": 19.076,
+      "lng": 72.8777
+    },
+    "diagnosis": {
+      "primary": "Metastatic Melanoma",
+      "subtype": null,
+      "stage": "IV",
+      "icd10": null,
+      "biomarkers": {
+        "BRAF": "V600E mut+",
+        "NRAS": "wild-type",
+        "c-KIT": "wild-type"
+      }
+    },
+    "medical_history": [
+      "Type 2 Diabetes Mellitus"
+    ],
+    "medications": [
+      "Metformin 500mg BID"
+    ],
+    "prior_treatments": [],
+    "lab_values": {
+      "hemoglobin": 10.5,
+      "wbc": 8.1,
+      "platelets": 150.0,
+      "creatinine": 1.2,
+      "bilirubin": 1.1,
+      "alt": 45.0,
+      "ast": 42.0
+    },
+    "ecog_status": 2,
+    "smoking_status": "Current",
+    "allergies": [
+      "Sulfa drugs"
+    ],
+    "clinical_notes": "Advanced metastatic melanoma with BRAF V600E mutation. Patient is symptomatic with mild functional decline (ECOG 2) and requires systemic therapy. Consideration for BRAF/MEK inhibitor trials or CTLA-4/PD-1 combination studies."
+  },
+  {
+    "patient_id": "ANON_8C23707B",
+    "demographics": {
+      "age": 61,
+      "gender": "Male",
+      "name": "[PERSON_4854FE]",
+      "city": "Mumbai",
+      "state": "Maharashtra",
+      "lat": 19.076,
+      "lng": 72.8777
+    },
+    "diagnosis": {
+      "primary": "Non-Small Cell Lung Cancer",
+      "subtype": "Adenocarcinoma",
+      "stage": "Stage IV",
+      "icd10": "C34.9",
+      "biomarkers": {
+        "KRAS": "G12C",
+        "PDL1": "TPS 15%"
+      }
+    },
+    "medical_history": [
+      "Hypertension",
+      "Hyperlipidemia"
+    ],
+    "medications": [
+      "Amlodipine",
+      "Atorvastatin"
+    ],
+    "prior_treatments": [],
+    "lab_values": {
+      "hemoglobin": 11.8,
+      "wbc": 6800.0,
+      "platelets": 195000.0,
+      "creatinine": 0.9,
+      "bilirubin": 0.8,
+      "alt": 32.0,
+      "ast": 28.0
+    },
+    "ecog_status": 1,
+    "smoking_status": "Former smoker",
+    "allergies": [],
+    "clinical_notes": "Patient presents with Stage IV NSCLC adenocarcinoma. KRAS G12C mutation positive. PDL1 TPS 15%. Prior smoker. ECOG 1."
+  },
+  {
+    "patient_id": "ANON_754AEDB5",
+    "demographics": {
+      "age": 61,
+      "gender": "Male",
+      "name": "[PERSON_4854FE]",
+      "city": "Mumbai",
+      "state": "Maharashtra",
+      "lat": 19.076,
+      "lng": 72.8777
+    },
+    "diagnosis": {
+      "primary": "Non-Small Cell Lung Cancer",
+      "subtype": "Adenocarcinoma",
+      "stage": "Stage IV",
+      "icd10": "C34.9",
+      "biomarkers": {
+        "KRAS": "G12C",
+        "PDL1": "TPS 15%"
+      }
+    },
+    "medical_history": [
+      "Hypertension",
+      "Hyperlipidemia"
+    ],
+    "medications": [
+      "Amlodipine",
+      "Atorvastatin"
+    ],
+    "prior_treatments": [],
+    "lab_values": {
+      "hemoglobin": 11.8,
+      "wbc": 6800.0,
+      "platelets": 195000.0,
+      "creatinine": 0.9,
+      "bilirubin": 0.8,
+      "alt": 32.0,
+      "ast": 28.0
+    },
+    "ecog_status": 1,
+    "smoking_status": "Former smoker",
+    "allergies": [],
+    "clinical_notes": "Patient presents with Stage IV NSCLC adenocarcinoma. KRAS G12C mutation positive. PDL1 TPS 15%. Prior smoker. ECOG 1."
+  },
+  {
+    "patient_id": "ANON_7689E587",
+    "demographics": {
+      "age": 61,
+      "gender": "Male",
+      "name": "[PERSON_4854FE]",
+      "city": "Mumbai",
+      "state": "Maharashtra",
+      "lat": 19.076,
+      "lng": 72.8777
+    },
+    "diagnosis": {
+      "primary": "Non-Small Cell Lung Cancer",
+      "subtype": "Adenocarcinoma",
+      "stage": "Stage IV",
+      "icd10": "C34.9",
+      "biomarkers": {
+        "KRAS": "G12C",
+        "PDL1": "TPS 15%"
+      }
+    },
+    "medical_history": [
+      "Hypertension",
+      "Hyperlipidemia"
+    ],
+    "medications": [
+      "Amlodipine",
+      "Atorvastatin"
+    ],
+    "prior_treatments": [],
+    "lab_values": {
+      "hemoglobin": 11.8,
+      "wbc": 6800.0,
+      "platelets": 195000.0,
+      "creatinine": 0.9,
+      "bilirubin": 0.8,
+      "alt": 32.0,
+      "ast": 28.0
+    },
+    "ecog_status": 1,
+    "smoking_status": "Former smoker",
+    "allergies": [],
+    "clinical_notes": "Patient presents with Stage IV NSCLC adenocarcinoma. KRAS G12C mutation positive. PDL1 TPS 15%. Prior smoker. ECOG 1."
+  },
+  {
+    "patient_id": "ANON_816B02E7",
+    "demographics": {
+      "age": 61,
+      "gender": "Male",
+      "name": "[PERSON_4854FE]",
+      "city": "Mumbai",
+      "state": "Maharashtra",
+      "lat": 19.076,
+      "lng": 72.8777
+    },
+    "diagnosis": {
+      "primary": "Non-Small Cell Lung Cancer",
+      "subtype": "Adenocarcinoma",
+      "stage": "Stage IV",
+      "icd10": "C34.9",
+      "biomarkers": {
+        "KRAS": "G12C",
+        "PDL1": "TPS 15%"
+      }
+    },
+    "medical_history": [
+      "Hypertension",
+      "Hyperlipidemia"
+    ],
+    "medications": [
+      "Amlodipine",
+      "Atorvastatin"
+    ],
+    "prior_treatments": [],
+    "lab_values": {
+      "hemoglobin": 11.8,
+      "wbc": 6800.0,
+      "platelets": 195000.0,
+      "creatinine": 0.9,
+      "bilirubin": 0.8,
+      "alt": 32.0,
+      "ast": 28.0
+    },
+    "ecog_status": 1,
+    "smoking_status": "Former smoker",
+    "allergies": [],
+    "clinical_notes": "Patient presents with Stage IV NSCLC adenocarcinoma. KRAS G12C mutation positive. PDL1 TPS 15%. Prior smoker. ECOG 1."
   }
 ]

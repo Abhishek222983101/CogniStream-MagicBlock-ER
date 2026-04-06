@@ -612,10 +612,21 @@ export class ERClient {
       const [patientPda] = derivePatientPda(this.wallet.publicKey, params.patientId);
       const [consentPda] = deriveConsentPda(patientPda, params.trialId);
       const consentPdaKey = consentPda.toBase58();
+      const patientPdaKey = patientPda.toBase58();
 
-      // Check cache first
-      const cachedExists = pdaCache.get(consentPdaKey);
-      if (cachedExists === true) {
+      console.log("[ER] logConsent called with:", {
+        patientId: params.patientId,
+        trialId: params.trialId,
+        consentType: params.consentType,
+        patientPda: patientPdaKey,
+        consentPda: consentPdaKey,
+        isDelegated,
+        hasER: !!this.programER,
+      });
+
+      // Check cache first for consent
+      const cachedConsentExists = pdaCache.get(consentPdaKey);
+      if (cachedConsentExists === true) {
         console.log("[ER] Consent exists (cached), skipping log_consent");
         return {
           success: true,
@@ -623,6 +634,24 @@ export class ERClient {
           timing: { startMs, endMs: Date.now(), durationMs: Date.now() - startMs },
         };
       }
+
+      // CRITICAL: First check if patient PDA exists - error 3012 means it doesn't
+      const patientAccount = await resilientL1.withFallback(async (conn) => {
+        return await conn.getAccountInfo(patientPda);
+      });
+      
+      if (!patientAccount) {
+        console.error("[ER] Patient account does not exist:", patientPdaKey);
+        console.error("[ER] Patient ID:", params.patientId);
+        console.error("[ER] Wallet:", this.wallet.publicKey.toBase58());
+        return {
+          success: false,
+          error: `Patient "${params.patientId}" not initialized on-chain. Please run the pipeline first to create the patient account.`,
+          timing: { startMs, endMs: Date.now(), durationMs: Date.now() - startMs },
+        };
+      }
+      
+      console.log("[ER] Patient account exists:", patientPdaKey);
 
       // Check if consent already exists (idempotent behavior)
       console.log("[ER] Checking if consent PDA exists:", consentPdaKey);
@@ -641,31 +670,21 @@ export class ERClient {
       }
 
       let signature: string;
-      if (isDelegated && this.programER) {
-        const tx = await this.programER.methods
-          .logConsent(params.trialId, params.consentType)
-          .accounts({
-            authority: this.wallet.publicKey,
-            patientRecord: patientPda,
-            consentLog: consentPda,
-            systemProgram: SystemProgram.programId,
-          })
-          .transaction();
-          
-        signature = await this.sendTransaction(tx, this.erConnection);
-      } else {
-        const tx = await this.programL1.methods
-          .logConsent(params.trialId, params.consentType)
-          .accounts({
-            authority: this.wallet.publicKey,
-            patientRecord: patientPda,
-            consentLog: consentPda,
-            systemProgram: SystemProgram.programId,
-          })
-          .transaction();
-          
-        signature = await this.sendTransactionL1(tx);
-      }
+      // NOTE: For hackathon demo, delegation is simulated, so we always use L1 for consent
+      // The ER connection (MagicBlock) would require actual delegation CPI which is complex
+      // Using L1 is reliable and demonstrates the full flow
+      console.log("[ER] Logging consent on L1...");
+      const tx = await this.programL1.methods
+        .logConsent(params.trialId, params.consentType)
+        .accounts({
+          authority: this.wallet.publicKey,
+          patientRecord: patientPda,
+          consentLog: consentPda,
+          systemProgram: SystemProgram.programId,
+        })
+        .transaction();
+        
+      signature = await this.sendTransactionL1(tx);
       const endMs = Date.now();
 
       return {
@@ -683,6 +702,16 @@ export class ERClient {
         return {
           success: true,
           signature: "consent-exists-from-error",
+          timing: { startMs, endMs: Date.now(), durationMs: Date.now() - startMs },
+        };
+      }
+
+      // Handle 3012 (AccountNotInitialized) more gracefully
+      if (error.message?.includes("3012") || error.message?.includes("AccountNotInitialized")) {
+        console.error("[ER] 3012 error - patient not initialized:", error.message);
+        return {
+          success: false,
+          error: "Patient account not found on-chain. Please run the pipeline first to initialize the patient.",
           timing: { startMs, endMs: Date.now(), durationMs: Date.now() - startMs },
         };
       }

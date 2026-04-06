@@ -81,13 +81,17 @@ export function GoogleMaps({
   radiusMiles = 100,
 }: GoogleMapsProps) {
   const [selectedTrial, setSelectedTrial] = useState<TrialLocation | null>(null);
+  const [apiKeyExpired, setApiKeyExpired] = useState(false);
   
   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "";
   
-  // Since the provided Google Maps API key doesn't have billing enabled,
-  // we'll safely fallback to a simple placeholder map visual to prevent the page from crashing.
-  if (!apiKey || apiKey.length < 5) {
-    return <PlaceholderMap patientLocation={patientLocation} trials={trials} />;
+  // HACKATHON FIX: Google Maps API key is expired/invalid.
+  // Force fallback to PlaceholderMap to avoid ExpiredKeyMapError crashing the demo.
+  // This is cleaner than trying to catch Google's uncatchable errors.
+  const forceUseFallback = true; // Set to false once you have a valid billing-enabled key
+  
+  if (!apiKey || apiKey.length < 5 || forceUseFallback || apiKeyExpired) {
+    return <PlaceholderMap patientLocation={patientLocation} trials={trials} error="Map unavailable - using static view" />;
   }
   
   // We'll catch the unhandled rejection from the google maps script internally
