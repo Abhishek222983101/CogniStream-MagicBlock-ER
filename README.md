@@ -355,23 +355,28 @@ composite_score = (
 
 ### 1. Patient Pipeline (ZK Verification + ML Processing + ER Transactions)
 The core pipeline demonstrating Reclaim ZK-TLS verification of medical records, followed by AI processing and gasless MagicBlock ER transactions.
-<img width="1920" alt="Pipeline Processing" src="https://github.com/user-attachments/assets/c6613da8-32a2-4a0b-93aa-c07aeb7e6005" />
+
+*(Please drag and drop your pipeline screenshot here in the GitHub web editor)*
 
 ### 2. MagicBlock ER Gasless Execution
 Real-time execution of Ephemeral Rollups showing sub-50ms gasless transactions for patient initialization, delegation, and matching.
-<img width="1920" alt="ER Execution" src="https://github.com/user-attachments/assets/f0d8efb7-ec91-44dc-9b93-b6d4e8b0b970" />
+
+*(Please drag and drop your ER execution screenshot here in the GitHub web editor)*
 
 ### 3. ML Matching Results & ZK Badge
 The results page displaying the highest-confidence clinical trial matches along with the cryptographic ZK verification badge.
-<img width="1920" alt="Results Page" src="https://github.com/user-attachments/assets/b822d2d6-4e56-42bb-a0e0-ef4b8d7e4cf4" />
+
+*(Please drag and drop your results page screenshot here in the GitHub web editor)*
 
 ### 4. Cryptographic Proof Verification
 The "View Raw Proof" modal revealing the Reclaim Protocol ZK-TLS JSON payload, proving data provenance without exposing credentials.
-<img width="1920" alt="ZK Proof" src="https://github.com/user-attachments/assets/e0f0c0f8-c7e6-42f0-a7d1-e87f3b603eb6" />
+
+*(Please drag and drop your ZK proof modal screenshot here in the GitHub web editor)*
 
 ### 5. On-Chain Transaction Confirmation
 Verified on-chain transactions on Solana Devnet confirming the immutable logging of the patient's data and match records.
-<img width="1920" alt="Solscan Confirmation" src="https://github.com/user-attachments/assets/d1f9a86b-563b-4892-a1b7-c8c7d8e9c012" />
+
+*(Please drag and drop your Solscan confirmation screenshot here in the GitHub web editor)*
 
 ---
 
