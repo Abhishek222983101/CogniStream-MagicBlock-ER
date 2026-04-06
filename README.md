@@ -35,6 +35,32 @@ CogniStream solves this with a 3-layer approach:
 
 ---
 
+## Demo Video
+
+<!-- Add your demo video link here -->
+**[Watch the Full Demo (3 minutes)](#)** — Coming soon
+
+### Test the Full Flow Yourself
+
+1. Open `http://localhost:3000` (or deployed link)
+2. Navigate to **Dashboard** → **Pipeline**
+3. Connect **Phantom Wallet** (Devnet)
+4. Click **"Use Sample"** to load Arjun Mehta's patient data
+5. Click **"Start Verification & Processing"**
+6. Approve Phantom transactions (you'll see 3 popups since ER is gasless)
+7. Click **"View Full Results"** when complete
+8. Check the **ZK Verified** badge and **On-Chain Proof** links
+9. Click **"Log Consent"** → Voice page → Say **"I want to participate"**
+
+### Demo Flow
+
+1. **ZK Verification** (0:00-0:30): Connect wallet, verify patient data via Reclaim Protocol
+2. **ML Pipeline** (0:30-1:30): Watch AI analyze patient against 97 trials
+3. **ER Transactions** (1:30-2:15): See 4 gasless Solana transactions execute
+4. **Voice Consent** (2:15-3:00): Say "I want to participate" to log consent on-chain
+
+---
+
 ## On-Chain Program
 
 | Field | Value |
@@ -396,17 +422,10 @@ cd /path/to/CogniStream-MagicBlock-ER/frontend
 pnpm dev
 ```
 
-### 4. Test the Full Flow
+### 4. Run the Pipeline locally
 
 1. Open `http://localhost:3000`
-2. Navigate to **Dashboard** → **Pipeline**
-3. Connect **Phantom Wallet** (Devnet)
-4. Click **"Use Sample"** to load Arjun Mehta's patient data
-5. Click **"Start Verification & Processing"**
-6. Approve Phantom transactions (you'll see 3-4 popups)
-7. Click **"View Full Results"** when complete
-8. Check the **ZK Verified** badge and **On-Chain Proof** links
-9. Click **"Log Consent"** → Voice page → Say **"I want to participate"**
+2. Follow the steps in the Demo Flow section to test the app!
 
 ---
 
