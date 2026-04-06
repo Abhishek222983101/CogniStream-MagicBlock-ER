@@ -356,27 +356,27 @@ composite_score = (
 ### 1. Patient Pipeline (ZK Verification + ML Processing + ER Transactions)
 The core pipeline demonstrating Reclaim ZK-TLS verification of medical records, followed by AI processing and gasless MagicBlock ER transactions.
 
-*(Please drag and drop your pipeline screenshot here in the GitHub web editor)*
+*(Please upload the `Image 1` you provided by dragging and dropping it into your GitHub repository's README editor. We couldn't fetch the image automatically from our side).*
 
 ### 2. MagicBlock ER Gasless Execution
 Real-time execution of Ephemeral Rollups showing sub-50ms gasless transactions for patient initialization, delegation, and matching.
 
-*(Please drag and drop your ER execution screenshot here in the GitHub web editor)*
+*(Please upload the `Image 3` you provided by dragging and dropping it into your GitHub repository's README editor. We couldn't fetch the image automatically from our side).*
 
 ### 3. ML Matching Results & ZK Badge
 The results page displaying the highest-confidence clinical trial matches along with the cryptographic ZK verification badge.
 
-*(Please drag and drop your results page screenshot here in the GitHub web editor)*
+*(Please upload the `Image 6` you provided by dragging and dropping it into your GitHub repository's README editor. We couldn't fetch the image automatically from our side).*
 
 ### 4. Cryptographic Proof Verification
 The "View Raw Proof" modal revealing the Reclaim Protocol ZK-TLS JSON payload, proving data provenance without exposing credentials.
 
-*(Please drag and drop your ZK proof modal screenshot here in the GitHub web editor)*
+*(Please upload the `Image 5` you provided by dragging and dropping it into your GitHub repository's README editor. We couldn't fetch the image automatically from our side).*
 
 ### 5. On-Chain Transaction Confirmation
 Verified on-chain transactions on Solana Devnet confirming the immutable logging of the patient's data and match records.
 
-*(Please drag and drop your Solscan confirmation screenshot here in the GitHub web editor)*
+*(Please upload the `Image 4` you provided by dragging and dropping it into your GitHub repository's README editor. We couldn't fetch the image automatically from our side).*
 
 ---
 
