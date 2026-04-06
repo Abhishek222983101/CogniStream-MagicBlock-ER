@@ -510,18 +510,30 @@ export class ERClient {
         ? params.resultHash
         : Array.from(params.resultHash);
 
-      const tx = await this.programL1.methods
-        .recordMatch(params.trialId, resultHash as number[], params.scoreBps)
-        .accounts({
-          authority: this.wallet.publicKey,
-          patientRecord: patientPda,
-          matchResult: matchPda,
-          systemProgram: SystemProgram.programId,
-        })
-        .transaction();
-
-      // Use L1 connection for reliable confirmation
-      const signature = await this.sendTransactionL1(tx);
+      let signature: string;
+      if (isDelegated && this.programER) {
+        const tx = await this.programER.methods
+          .recordMatch(params.trialId, resultHash as number[], params.scoreBps)
+          .accounts({
+            authority: this.wallet.publicKey,
+            patientRecord: patientPda,
+            matchResult: matchPda,
+            systemProgram: SystemProgram.programId,
+          })
+          .transaction();
+        signature = await this.sendTransaction(tx, this.erConnection);
+      } else {
+        const tx = await this.programL1.methods
+          .recordMatch(params.trialId, resultHash as number[], params.scoreBps)
+          .accounts({
+            authority: this.wallet.publicKey,
+            patientRecord: patientPda,
+            matchResult: matchPda,
+            systemProgram: SystemProgram.programId,
+          })
+          .transaction();
+        signature = await this.sendTransactionL1(tx);
+      }
       const endMs = Date.now();
 
       return {
