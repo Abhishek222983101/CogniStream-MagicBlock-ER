@@ -355,28 +355,23 @@ composite_score = (
 
 ### 1. Patient Pipeline (ZK Verification + ML Processing + ER Transactions)
 The core pipeline demonstrating Reclaim ZK-TLS verification of medical records, followed by AI processing and gasless MagicBlock ER transactions.
-
-*(Please upload the `Image 1` you provided by dragging and dropping it into your GitHub repository's README editor. We couldn't fetch the image automatically from our side).*
+![Patient Pipeline](docs/assets/pipeline.png)
 
 ### 2. MagicBlock ER Gasless Execution
 Real-time execution of Ephemeral Rollups showing sub-50ms gasless transactions for patient initialization, delegation, and matching.
-
-*(Please upload the `Image 3` you provided by dragging and dropping it into your GitHub repository's README editor. We couldn't fetch the image automatically from our side).*
+![ER Execution](docs/assets/terminal-log.png)
 
 ### 3. ML Matching Results & ZK Badge
 The results page displaying the highest-confidence clinical trial matches along with the cryptographic ZK verification badge.
-
-*(Please upload the `Image 6` you provided by dragging and dropping it into your GitHub repository's README editor. We couldn't fetch the image automatically from our side).*
+![ML Matching](docs/assets/ml-matching.png)
 
 ### 4. Cryptographic Proof Verification
 The "View Raw Proof" modal revealing the Reclaim Protocol ZK-TLS JSON payload, proving data provenance without exposing credentials.
-
-*(Please upload the `Image 5` you provided by dragging and dropping it into your GitHub repository's README editor. We couldn't fetch the image automatically from our side).*
+![ZK Proof](docs/assets/zk-proof.png)
 
 ### 5. On-Chain Transaction Confirmation
 Verified on-chain transactions on Solana Devnet confirming the immutable logging of the patient's data and match records.
-
-*(Please upload the `Image 4` you provided by dragging and dropping it into your GitHub repository's README editor. We couldn't fetch the image automatically from our side).*
+![Processing Complete](docs/assets/processing-complete.png)
 
 ---
 
