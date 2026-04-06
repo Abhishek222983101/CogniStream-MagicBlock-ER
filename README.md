@@ -73,9 +73,9 @@ CogniStream solves this with a 3-layer approach:
 
 **Solana Explorer Links:**
 - [Program Account (Devnet)](https://explorer.solana.com/address/3YUtpqBtoJshnq7zWviWFrdWc82pgiDLM9wjfFujGMEg?cluster=devnet)
-- [Example Patient Init Transaction](https://solscan.io/tx/3FdMYohGnc6C35R6KZgAx3j1tihHRsYFsPvE2FeKYKmVMHRC1usxj66BHdHSzP7jgqePkwPT3hntsBoSVbzDG2xr?cluster=devnet)
-- [Example Match Record Transaction](https://solscan.io/tx/2G3Kik9Cj48sgduQCVLnvNUAhmXVpvEVNP6jfoYHkfAC9ES7QdY1dKLSTxbhYrQi1127n55itkb4Fn2Jhq6J8r4i?cluster=devnet)
-- [Example Consent Log Transaction](https://solscan.io/tx/khTberbArm3mfpCCZtF1FcFxKkmoG2nB7Ft3EZyZ3bvvKTa3RqNVUWs4cWiLPP7bAjiXC3bG69dwnTfABsCvcbs?cluster=devnet)
+- [Example Patient Init Transaction](https://solscan.io/tx/fbvsADHve33gbkrB4TfbUb1QRwUK18wVBjCsSsAA9Y8F4DThpquU4s1QxuGnFtDbKoNxMDg83bSd71B98a2a362?cluster=devnet)
+- [Example Match Record Transaction](https://solscan.io/tx/4oq9eF7mS6QXNh8HF2szbbW1EHbWbdqNrT9uPwzVpACaC6nySkiZeNwYCaFuxm75WUCofuGd7ECHqbEz3Fo2EP89?cluster=devnet)
+- [Example Consent Log Transaction](https://solscan.io/tx/5s8ScYL5bF7cyuDwYdVUF42rZgmbxMxqSJk7tjH6QXdi3eFk6dLif7GQm4vvCyuexGjxdas6dTnSpTqn75o2Ptf7?cluster=devnet)
 
 ---
 
@@ -353,19 +353,25 @@ composite_score = (
 
 ## Screenshots
 
-<!-- Tell me where you need screenshots and I'll note them -->
+### 1. Patient Pipeline (ZK Verification + ML Processing + ER Transactions)
+The core pipeline demonstrating Reclaim ZK-TLS verification of medical records, followed by AI processing and gasless MagicBlock ER transactions.
+<img width="1920" alt="Pipeline Processing" src="https://github.com/user-attachments/assets/c6613da8-32a2-4a0b-93aa-c07aeb7e6005" />
 
-### Pipeline Page
-*Screenshot needed: Full pipeline page showing ZK verification + ML processing + ER transactions*
+### 2. MagicBlock ER Gasless Execution
+Real-time execution of Ephemeral Rollups showing sub-50ms gasless transactions for patient initialization, delegation, and matching.
+<img width="1920" alt="ER Execution" src="https://github.com/user-attachments/assets/f0d8efb7-ec91-44dc-9b93-b6d4e8b0b970" />
 
-### Results Page with ZK Badge
-*Screenshot needed: Results page showing "ZK Verified" badge and "On-Chain Proof" links*
+### 3. ML Matching Results & ZK Badge
+The results page displaying the highest-confidence clinical trial matches along with the cryptographic ZK verification badge.
+<img width="1920" alt="Results Page" src="https://github.com/user-attachments/assets/b822d2d6-4e56-42bb-a0e0-ef4b8d7e4cf4" />
 
-### Raw ZK Proof Modal
-*Screenshot needed: The "View Raw Proof" modal showing cryptographic JSON*
+### 4. Cryptographic Proof Verification
+The "View Raw Proof" modal revealing the Reclaim Protocol ZK-TLS JSON payload, proving data provenance without exposing credentials.
+<img width="1920" alt="ZK Proof" src="https://github.com/user-attachments/assets/e0f0c0f8-c7e6-42f0-a7d1-e87f3b603eb6" />
 
-### Voice Assistant
-*Screenshot needed: Voice page showing "Already recorded on-chain" success*
+### 5. On-Chain Transaction Confirmation
+Verified on-chain transactions on Solana Devnet confirming the immutable logging of the patient's data and match records.
+<img width="1920" alt="Solscan Confirmation" src="https://github.com/user-attachments/assets/d1f9a86b-563b-4892-a1b7-c8c7d8e9c012" />
 
 ---
 
