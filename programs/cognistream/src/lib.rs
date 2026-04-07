@@ -367,3 +367,4 @@ pub struct UndelegationCallback<'info> {
     #[account(mut)]
     pub patient_record: Account<'info, PatientRecord>,
 }
+

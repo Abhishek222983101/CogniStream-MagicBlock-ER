@@ -50,3 +50,4 @@ pub const MATCH_RESULT_SIZE: usize = 8 + 32 + (4 + MAX_TRIAL_ID_LEN) + HASH_LEN 
 /// ConsentLog account size
 /// 8 + 32 (patient) + 4+20 (trial_id) + 1 (consent_type) + 8 (ts) + 1 (revoked) + 1 (bump)
 pub const CONSENT_LOG_SIZE: usize = 8 + 32 + (4 + MAX_TRIAL_ID_LEN) + 1 + 8 + 1 + 1;
+

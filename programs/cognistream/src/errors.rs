@@ -80,3 +80,4 @@ pub enum CogniStreamError {
     #[msg("Account data is corrupted")]
     CorruptedData,
 }
+
