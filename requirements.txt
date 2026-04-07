@@ -18,3 +18,4 @@ spacy>=3.7.0
 sentence-transformers>=2.2.0
 wandb>=0.16.0
 googlemaps>=4.10.0
+
