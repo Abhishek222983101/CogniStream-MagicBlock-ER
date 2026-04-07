@@ -37,8 +37,9 @@ CogniStream solves this with a 3-layer approach:
 
 ## Demo Video
 
-<!-- Add your demo video link here -->
-**[Watch the Full Demo (3 minutes)](#)** — Coming soon
+[![CogniStream Demo](https://img.youtube.com/vi/KMxHRIt6uK8/maxresdefault.jpg)](https://youtu.be/KMxHRIt6uK8)
+
+**[Watch the Full Demo on YouTube](https://youtu.be/KMxHRIt6uK8)**
 
 ### Test the Full Flow Yourself
 
@@ -339,8 +340,9 @@ composite_score = (
 
 ## Demo Video
 
-<!-- Add your demo video link here -->
-**[Watch the Full Demo (3 minutes)](#)** — Coming soon
+[![CogniStream Demo](https://img.youtube.com/vi/KMxHRIt6uK8/maxresdefault.jpg)](https://youtu.be/KMxHRIt6uK8)
+
+**[Watch the Full Demo on YouTube](https://youtu.be/KMxHRIt6uK8)**
 
 ### Demo Flow
 
