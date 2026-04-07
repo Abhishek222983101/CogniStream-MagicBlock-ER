@@ -17,3 +17,4 @@ codegen-units = 1
 # Pin block-buffer to avoid edition2024 issues
 [patch.crates-io]
 block-buffer = { git = "https://github.com/RustCrypto/utils", tag = "block-buffer-v0.10.4" }
+
